@@ -46,6 +46,9 @@ document.addEventListener("DOMContentLoaded", function () {
         // Display converted text
         outputText.innerHTML = result.data.converted;
 
+        // Add click event listeners to ruby elements for speech synthesis
+        addRubyClickHandlers();
+
         // Display statistics
         const statsData = result.data.stats;
         stats.innerHTML = `
@@ -111,5 +114,62 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     return result;
+  }
+
+  // Text-to-speech functionality
+  function speakText(text) {
+    if ('speechSynthesis' in window) {
+      // Cancel any ongoing speech
+      window.speechSynthesis.cancel();
+
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = 'en-US';
+      utterance.rate = 0.8;
+      utterance.pitch = 1.0;
+      utterance.volume = 0.8;
+
+      window.speechSynthesis.speak(utterance);
+    } else {
+      console.warn('Speech synthesis not supported in this browser');
+    }
+  }
+
+  // Add click event listeners to ruby elements
+  function addRubyClickHandlers() {
+    const rubyElements = outputText.querySelectorAll('ruby');
+    
+    rubyElements.forEach(ruby => {
+      // Remove any existing click handlers
+      ruby.removeEventListener('click', handleRubyClick);
+      
+      // Add click handler
+      ruby.addEventListener('click', handleRubyClick);
+      
+      // Add visual indication that it's clickable
+      ruby.style.cursor = 'pointer';
+      ruby.title = 'Click to hear pronunciation';
+    });
+  }
+
+  // Handle ruby element clicks
+  function handleRubyClick(event) {
+    event.preventDefault();
+    event.stopPropagation();
+    
+    const ruby = event.currentTarget;
+    const rtElement = ruby.querySelector('rt');
+    
+    if (rtElement) {
+      const englishText = rtElement.textContent.trim();
+      console.log('Speaking:', englishText);
+      
+      // Add visual feedback
+      ruby.style.background = '#e3f2fd';
+      setTimeout(() => {
+        ruby.style.background = '';
+      }, 300);
+      
+      speakText(englishText);
+    }
   }
 });
