@@ -1,7 +1,7 @@
 {
   "name": "rubylingo-api",
   "version": "1.0.0",
-  "description": "RubyLingo - 英単語シャワー API",
+  "description": "RubyLingo - RubyLingo API",
   "main": "src/index.js",
   "scripts": {
     "dev": "nodemon src/index.js",
@@ -20,7 +20,13 @@
     "nodemon": "^3.0.0",
     "jest": "^29.7.0"
   },
-  "keywords": ["japanese", "ruby", "english", "learning", "api"],
+  "keywords": [
+    "japanese",
+    "ruby",
+    "english",
+    "learning",
+    "api"
+  ],
   "author": "RubyLingo Team",
   "license": "MIT"
 }

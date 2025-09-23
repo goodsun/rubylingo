@@ -19,3 +19,17 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+---
+
+## Dictionary Data Attribution
+
+This software incorporates dictionary data from the JMdict/EDICT project:
+
+- **JMdict**: Japanese-Multilingual Dictionary
+- **Copyright**: Electronic Dictionary Research and Development Group (EDRDG)  
+- **License**: Creative Commons Attribution-ShareAlike 4.0 International
+- **Source**: https://www.edrdg.org/wiki/index.php/JMdict-EDICT_Dictionary_Project
+
+The dictionary data is used in accordance with the EDRDG License Statement.
+Any distribution of this software must include this attribution notice.
