@@ -8,7 +8,10 @@
     "start": "node src/index.js",
     "test": "jest",
     "build": "echo 'Build complete'",
-    "deploy": "serverless deploy"
+    "deploy": "serverless deploy",
+    "download-jmdict": "node scripts/download-jmdict.js",
+    "parse-jmdict": "node scripts/parse-jmdict.js",
+    "build-dictionaries": "npm run download-jmdict && npm run parse-jmdict"
   },
   "dependencies": {
     "express": "^4.18.0",

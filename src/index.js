@@ -3,7 +3,15 @@ const serverless = require('serverless-http');
 const cors = require('cors');
 const path = require('path');
 
+// Import our modules
+const DictionaryManager = require('./lib/dictionary');
+const MorphologicalAnalyzer = require('./lib/analyzer');
+
 const app = express();
+
+// Initialize components
+const dictionaryManager = new DictionaryManager();
+const analyzer = new MorphologicalAnalyzer(dictionaryManager);
 
 // Middleware
 app.use(cors());
@@ -19,7 +27,7 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// Convert endpoint (placeholder)
+// Convert endpoint (real implementation)
 app.post('/api/convert', async (req, res) => {
   try {
     const { text, dictionary = 'basic', format = 'html' } = req.body;
@@ -34,19 +42,22 @@ app.post('/api/convert', async (req, res) => {
       });
     }
 
-    // Placeholder response
+    if (text.length > 10000) {
+      return res.status(400).json({
+        success: false,
+        error: { 
+          code: 'TEXT_TOO_LONG', 
+          message: 'テキストが長すぎます（最大10,000文字）' 
+        }
+      });
+    }
+
+    // Convert text using real morphological analysis
+    const result = await analyzer.convertToRuby(text, dictionary);
+    
     res.json({
       success: true,
-      data: {
-        original: text,
-        converted: `<ruby>${text}<rt>placeholder</rt></ruby>`,
-        stats: {
-          total_characters: text.length,
-          converted_words: 1,
-          conversion_rate: '100%',
-          processing_time: 50
-        }
-      }
+      data: result
     });
     
   } catch (error) {
@@ -55,7 +66,68 @@ app.post('/api/convert', async (req, res) => {
       success: false,
       error: { 
         code: 'CONVERSION_FAILED', 
-        message: '変換処理でエラーが発生しました' 
+        message: '変換処理でエラーが発生しました: ' + error.message
+      }
+    });
+  }
+});
+
+// Detailed analysis endpoint
+app.post('/api/analyze', async (req, res) => {
+  try {
+    const { text, dictionary = 'basic' } = req.body;
+    
+    if (!text || typeof text !== 'string') {
+      return res.status(400).json({
+        success: false,
+        error: { 
+          code: 'INVALID_INPUT', 
+          message: 'テキストが必要です' 
+        }
+      });
+    }
+
+    const analysis = await analyzer.getDetailedAnalysis(text, dictionary);
+    
+    res.json({
+      success: true,
+      data: analysis
+    });
+    
+  } catch (error) {
+    console.error('Analysis error:', error);
+    res.status(500).json({
+      success: false,
+      error: { 
+        code: 'ANALYSIS_FAILED', 
+        message: '解析処理でエラーが発生しました: ' + error.message
+      }
+    });
+  }
+});
+
+// System status endpoint
+app.get('/api/status', (req, res) => {
+  try {
+    const status = analyzer.getStatus();
+    
+    res.json({
+      success: true,
+      data: {
+        ...status,
+        uptime: process.uptime(),
+        nodeVersion: process.version,
+        memoryUsage: process.memoryUsage()
+      }
+    });
+    
+  } catch (error) {
+    console.error('Status error:', error);
+    res.status(500).json({
+      success: false,
+      error: { 
+        code: 'STATUS_FAILED', 
+        message: 'ステータス取得でエラーが発生しました' 
       }
     });
   }
@@ -69,11 +141,40 @@ app.get('*', (req, res) => {
 // Export for Lambda or local server
 const port = process.env.PORT || 3000;
 
+// Initialize system on startup
+async function initializeSystem() {
+  try {
+    console.log('🚀 Initializing RubyLingo system...');
+    
+    // Preload basic dictionary
+    dictionaryManager.preloadDictionaries(['basic']);
+    
+    // Initialize kuromoji
+    await analyzer.initialize();
+    
+    console.log('✅ RubyLingo system initialized successfully');
+  } catch (error) {
+    console.error('❌ System initialization failed:', error);
+    throw error;
+  }
+}
+
 if (process.env.NODE_ENV === 'production') {
+  // Lambda handler
   module.exports.handler = serverless(app);
 } else {
-  app.listen(port, () => {
-    console.log(`RubyLingo API running on port ${port}`);
-    console.log(`Health check: http://localhost:${port}/api/health`);
-  });
+  // Local development server
+  initializeSystem()
+    .then(() => {
+      app.listen(port, () => {
+        console.log(`💎 RubyLingo API running on port ${port}`);
+        console.log(`🔍 Health check: http://localhost:${port}/api/health`);
+        console.log(`🚿 Convert API: http://localhost:${port}/api/convert`);
+        console.log(`📊 Status: http://localhost:${port}/api/status`);
+      });
+    })
+    .catch(error => {
+      console.error('Failed to start server:', error);
+      process.exit(1);
+    });
 }

@@ -1,0 +1,12 @@
+{
+  "generatedAt": "2025-09-23T02:26:38.090Z",
+  "totalEntries": 213538,
+  "levels": [
+    "basic",
+    "business",
+    "academic",
+    "comprehensive"
+  ],
+  "source": "JMdict/EDICT",
+  "license": "Creative Commons Attribution-ShareAlike 4.0"
+}

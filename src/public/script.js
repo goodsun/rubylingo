@@ -64,7 +64,7 @@ document.addEventListener("DOMContentLoaded", function () {
     } finally {
       // Reset button state
       convertBtn.disabled = false;
-      convertBtn.textContent = "RubyLingo!";
+      convertBtn.textContent = "💎 変換";
     }
   });
 
