@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RubyLingo - 英単語シャワー</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🚿 英単語シャワー変換</h1>
+            <p>日本語テキストに英訳ルビを付けて、大量の英単語に触れましょう</p>
+        </header>
+        
+        <main>
+            <div class="input-section">
+                <label for="inputText">日本語テキスト:</label>
+                <textarea 
+                    id="inputText" 
+                    placeholder="日本語テキストを入力してください..."
+                    rows="8"
+                ></textarea>
+            </div>
+            
+            <div class="controls">
+                <div class="dictionary-select">
+                    <label for="dictionarySelect">辞書レベル:</label>
+                    <select id="dictionarySelect">
+                        <option value="basic">基礎 (5,000語)</option>
+                        <option value="business">ビジネス (10,000語)</option>
+                        <option value="academic">学術 (20,000語)</option>
+                        <option value="comprehensive">総合 (50,000語)</option>
+                    </select>
+                </div>
+                <button id="convertBtn" class="convert-btn">
+                    シャワー変換
+                </button>
+            </div>
+            
+            <div class="output-section">
+                <label>変換結果:</label>
+                <div id="outputText" class="output-text"></div>
+                <div id="stats" class="stats"></div>
+            </div>
+        </main>
+    </div>
+    
+    <script src="script.js"></script>
+</body>
+</html>
