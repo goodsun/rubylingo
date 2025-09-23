@@ -5,7 +5,9 @@ class DictionaryManager {
   constructor() {
     this.dictionaries = {};
     this.dictionaryPath = path.join(__dirname, '..', '..', 'dictionaries');
+    this.showerDictionaryPath = path.join(__dirname, '..', '..', 'dictionaries', 'shower');
     this.loadedLevels = new Set();
+    this.useShowerDictionaries = true; // Use 60MB shower dictionaries by default
   }
 
   /**
@@ -17,19 +19,45 @@ class DictionaryManager {
       return;
     }
 
-    const filePath = path.join(this.dictionaryPath, `${level}.json`);
+    // Determine which dictionary to use
+    let filePath;
+    let dictionaryType;
+    
+    if (this.useShowerDictionaries) {
+      // Map level names for shower dictionaries
+      const showerLevelMap = {
+        'basic': 'business', // Use business shower dictionary as fallback since daily failed
+        'business': 'business',
+        'academic': 'academic', 
+        'comprehensive': 'comprehensive'
+      };
+      
+      const showerLevel = showerLevelMap[level] || 'business';
+      filePath = path.join(this.showerDictionaryPath, `${showerLevel}.json`);
+      dictionaryType = 'シャワー';
+      
+      // Fallback to original if shower dictionary not found
+      if (!fs.existsSync(filePath)) {
+        filePath = path.join(this.dictionaryPath, `${level}.json`);
+        dictionaryType = '従来';
+      }
+    } else {
+      filePath = path.join(this.dictionaryPath, `${level}.json`);
+      dictionaryType = '従来';
+    }
     
     if (!fs.existsSync(filePath)) {
       throw new Error(`Dictionary file not found: ${filePath}`);
     }
 
-    console.log(`📚 Loading ${level} dictionary...`);
+    console.log(`📚 Loading ${level} ${dictionaryType}辞書...`);
     const content = fs.readFileSync(filePath, 'utf8');
     this.dictionaries[level] = JSON.parse(content);
     this.loadedLevels.add(level);
     
     const wordCount = Object.keys(this.dictionaries[level]).length;
-    console.log(`✅ Loaded ${wordCount.toLocaleString()} words from ${level} dictionary`);
+    const fileSize = Math.round(fs.statSync(filePath).size / 1024 / 1024 * 10) / 10;
+    console.log(`✅ Loaded ${wordCount.toLocaleString()} words from ${level} ${dictionaryType}辞書 (${fileSize}MB)`);
   }
 
   /**
@@ -148,7 +176,27 @@ class DictionaryManager {
     const levelNames = ['basic', 'business', 'academic', 'comprehensive'];
     
     for (const level of levelNames) {
-      const filePath = path.join(this.dictionaryPath, `${level}.json`);
+      let filePath;
+      
+      if (this.useShowerDictionaries) {
+        const showerLevelMap = {
+          'basic': 'business',
+          'business': 'business', 
+          'academic': 'academic',
+          'comprehensive': 'comprehensive'
+        };
+        
+        const showerLevel = showerLevelMap[level] || 'business';
+        filePath = path.join(this.showerDictionaryPath, `${showerLevel}.json`);
+        
+        // Fallback to original
+        if (!fs.existsSync(filePath)) {
+          filePath = path.join(this.dictionaryPath, `${level}.json`);
+        }
+      } else {
+        filePath = path.join(this.dictionaryPath, `${level}.json`);
+      }
+      
       if (fs.existsSync(filePath)) {
         levels.push(level);
       }

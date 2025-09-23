@@ -147,9 +147,18 @@ ruby {
 
 rt {
   font-size: 0.7em;
-  color: #667eea;
   font-weight: 500;
 }
+
+/* Color-coded ruby elements using CSS nth-of-type */
+ruby:nth-of-type(3n+1) { color: #3498db; }
+ruby:nth-of-type(3n+1) rt { color: #2980b9; }
+
+ruby:nth-of-type(3n+2) { color: #2ecc71; }
+ruby:nth-of-type(3n+2) rt { color: #27ae60; }
+
+ruby:nth-of-type(3n+3) { color: #9b59b6; }
+ruby:nth-of-type(3n+3) rt { color: #8e44ad; }
 
 /* Responsive design */
 @media (max-width: 600px) {

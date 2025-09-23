@@ -193,7 +193,7 @@ class MorphologicalAnalyzer {
         result += text.slice(lastIndex, token.start);
       }
       
-      // Add ruby element
+      // Add ruby element without color class
       result += `<ruby>${token.word}<rt>${token.translation}</rt></ruby>`;
       
       lastIndex = token.end;

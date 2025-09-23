@@ -146,7 +146,7 @@ async function initializeSystem() {
   try {
     console.log('🚀 Initializing RubyLingo system...');
     
-    // Preload basic dictionary
+    // Preload basic shower dictionary
     dictionaryManager.preloadDictionaries(['basic']);
     
     // Initialize kuromoji

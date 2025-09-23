@@ -36,6 +36,9 @@ document.addEventListener("DOMContentLoaded", function () {
       });
 
       const result = await response.json();
+      
+      // Debug: Display raw API response
+      console.log('API Response:', result);
 
       if (result.success) {
         // Display converted text
@@ -76,23 +79,36 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   });
 
-  // Sample text for demonstration
-  const sampleTexts = [
-    "重要な会議で新しい戦略を検討した。",
-    "効率的な解決策を見つけるために協力する必要がある。",
-    "技術の進歩により、私たちの生活は大きく変化している。",
-  ];
-
-  // Add sample text button (for development)
-  if (process.env.NODE_ENV !== "production") {
-    const sampleBtn = document.createElement("button");
-    sampleBtn.textContent = "サンプルテキスト";
-    sampleBtn.style.marginLeft = "10px";
-    sampleBtn.onclick = () => {
-      const randomText =
-        sampleTexts[Math.floor(Math.random() * sampleTexts.length)];
-      inputText.value = randomText;
-    };
-    convertBtn.parentNode.appendChild(sampleBtn);
+  // Generate HTML with color-coded ruby elements
+  function generateRubyHTML(originalText, tokens) {
+    if (!tokens || !Array.isArray(tokens)) {
+      return originalText;
+    }
+    
+    let result = '';
+    let lastIndex = 0;
+    
+    for (let i = 0; i < tokens.length; i++) {
+      const token = tokens[i];
+      
+      // Add text before this token
+      if (token.start > lastIndex) {
+        result += originalText.slice(lastIndex, token.start);
+      }
+      
+      // Add ruby element with color class
+      const colorIndex = i % 3;
+      result += `<ruby class="ruby-color-${colorIndex}">${token.word}<rt>${token.translation}</rt></ruby>`;
+      
+      lastIndex = token.end;
+    }
+    
+    // Add remaining text
+    if (lastIndex < originalText.length) {
+      result += originalText.slice(lastIndex);
+    }
+    
+    return result;
   }
+
 });

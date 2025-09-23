@@ -11,7 +11,8 @@
     "deploy": "serverless deploy",
     "download-jmdict": "node scripts/download-jmdict.js",
     "parse-jmdict": "node scripts/parse-jmdict.js",
-    "build-dictionaries": "npm run download-jmdict && npm run parse-jmdict"
+    "build-dictionaries": "npm run download-jmdict && npm run parse-jmdict",
+    "build-shower-dictionaries": "node scripts/build-shower-dictionaries.js"
   },
   "dependencies": {
     "express": "^4.18.0",

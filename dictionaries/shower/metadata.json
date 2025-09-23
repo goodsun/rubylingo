@@ -1,0 +1,47 @@
+{
+  "generatedAt": "2025-09-23T03:03:16.161Z",
+  "strategy": "60MB Shower Dictionary",
+  "targetSize": "60MB per dictionary",
+  "levels": ["daily", "business", "academic", "comprehensive"],
+  "totalDictionaries": 4,
+  "source": "JMdict/EDICT",
+  "license": "Creative Commons Attribution-ShareAlike 4.0",
+  "dictionaries": {
+    "daily": {
+      "wordCount": 0,
+      "actualSize": 0,
+      "targetSize": 62914560,
+      "efficiency": 0,
+      "avgScore": null,
+      "filePath": "/Users/goodsun/develop/goodsun/rubylingo/dictionaries/shower/daily.json",
+      "description": "日常辞書"
+    },
+    "business": {
+      "wordCount": 363642,
+      "actualSize": 62914468,
+      "targetSize": 62914560,
+      "efficiency": 0.9999985376993815,
+      "avgScore": 35.103645893488654,
+      "filePath": "/Users/goodsun/develop/goodsun/rubylingo/dictionaries/shower/business.json",
+      "description": "ビジネス辞書"
+    },
+    "academic": {
+      "wordCount": 344762,
+      "actualSize": 62914506,
+      "targetSize": 62914560,
+      "efficiency": 0.9999991416931152,
+      "avgScore": 48.5491585499562,
+      "filePath": "/Users/goodsun/develop/goodsun/rubylingo/dictionaries/shower/academic.json",
+      "description": "学術辞書"
+    },
+    "comprehensive": {
+      "wordCount": 355966,
+      "actualSize": 62914479,
+      "targetSize": 62914560,
+      "efficiency": 0.9999987125396729,
+      "avgScore": 52.4267963794295,
+      "filePath": "/Users/goodsun/develop/goodsun/rubylingo/dictionaries/shower/comprehensive.json",
+      "description": "総合辞書"
+    }
+  }
+}
