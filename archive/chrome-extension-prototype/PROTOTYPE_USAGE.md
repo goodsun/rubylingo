@@ -1,5 +1,9 @@
 # RubyLingo プロトタイプ 使用方法
 
+> **注意**: このプロトタイプは旧バージョン（Kuromoji + IPA辞書）用です。
+> 現在のAPIサーバーは **EDICT/JMdict + TinySegmenter** ベースに更新されています。
+> 最新の技術仕様は `/docs/edict-dictionary-integration.md` を参照してください。
+
 ## 🚀 クイックスタート
 
 ### 1. アイコンの準備

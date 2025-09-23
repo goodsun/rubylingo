@@ -1,6 +1,5 @@
 document.addEventListener("DOMContentLoaded", function () {
   const inputText = document.getElementById("inputText");
-  const dictionarySelect = document.getElementById("dictionarySelect");
   const convertBtn = document.getElementById("convertBtn");
   const outputText = document.getElementById("outputText");
   const stats = document.getElementById("stats");
@@ -8,7 +7,6 @@ document.addEventListener("DOMContentLoaded", function () {
   // Convert button click handler
   convertBtn.addEventListener("click", async () => {
     const text = inputText.value.trim();
-    const dictionary = dictionarySelect.value;
 
     if (!text) {
       alert("日本語テキストを入力してください");
@@ -30,15 +28,14 @@ document.addEventListener("DOMContentLoaded", function () {
         },
         body: JSON.stringify({
           text: text,
-          dictionary: dictionary,
           format: "html",
         }),
       });
 
       const result = await response.json();
-      
+
       // Debug: Display raw API response
-      console.log('API Response:', result);
+      console.log("API Response:", result);
 
       if (result.success) {
         // Display converted text
@@ -67,7 +64,7 @@ document.addEventListener("DOMContentLoaded", function () {
     } finally {
       // Reset button state
       convertBtn.disabled = false;
-      convertBtn.textContent = "💎 変換";
+      convertBtn.textContent = " 変換";
     }
   });
 
@@ -84,31 +81,30 @@ document.addEventListener("DOMContentLoaded", function () {
     if (!tokens || !Array.isArray(tokens)) {
       return originalText;
     }
-    
-    let result = '';
+
+    let result = "";
     let lastIndex = 0;
-    
+
     for (let i = 0; i < tokens.length; i++) {
       const token = tokens[i];
-      
+
       // Add text before this token
       if (token.start > lastIndex) {
         result += originalText.slice(lastIndex, token.start);
       }
-      
+
       // Add ruby element with color class
       const colorIndex = i % 3;
       result += `<ruby class="ruby-color-${colorIndex}">${token.word}<rt>${token.translation}</rt></ruby>`;
-      
+
       lastIndex = token.end;
     }
-    
+
     // Add remaining text
     if (lastIndex < originalText.length) {
       result += originalText.slice(lastIndex);
     }
-    
+
     return result;
   }
-
 });

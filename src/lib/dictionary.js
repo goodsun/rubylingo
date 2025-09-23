@@ -73,13 +73,12 @@ class DictionaryManager {
   /**
    * Look up word in dictionary
    * @param {string} word - Word to look up
-   * @param {string} level - Dictionary level
    * @returns {Object|null} Dictionary entry or null
    */
-  lookup(word, level = 'basic') {
-    this.ensureDictionaryLoaded(level);
+  lookup(word) {
+    this.ensureDictionaryLoaded('basic');
     
-    const dictionary = this.dictionaries[level];
+    const dictionary = this.dictionaries['basic'];
     if (!dictionary) {
       return null;
     }
@@ -99,35 +98,55 @@ class DictionaryManager {
   }
 
   /**
+   * Look up word with reading information
+   * @param {string} word - Word to look up
+   * @returns {Object|null} Dictionary entry with reading or null
+   */
+  lookupWithReading(word) {
+    const entry = this.lookup(word);
+    if (!entry) {
+      return null;
+    }
+
+    // Return full entry with reading information
+    return {
+      word: word,
+      reading: entry.reading || entry.readings?.[0] || word,
+      translation: entry.translation || entry.primary,
+      translations: entry.translations || [entry.translation || entry.primary],
+      pos: entry.pos || [],
+      kanjiForms: entry.kanjiForms || [word],
+      readings: entry.readings || [entry.reading || word]
+    };
+  }
+
+  /**
    * Get translation for word
    * @param {string} word - Word to translate
-   * @param {string} level - Dictionary level
    * @returns {string|null} Primary translation or null
    */
-  getTranslation(word, level = 'basic') {
-    const entry = this.lookup(word, level);
+  getTranslation(word) {
+    const entry = this.lookup(word);
     return entry ? entry.translation : null;
   }
 
   /**
    * Get all translations for word
    * @param {string} word - Word to translate
-   * @param {string} level - Dictionary level
    * @returns {Array} Array of translations
    */
-  getAllTranslations(word, level = 'basic') {
-    const entry = this.lookup(word, level);
+  getAllTranslations(word) {
+    const entry = this.lookup(word);
     return entry ? entry.translations || [entry.translation] : [];
   }
 
   /**
    * Check if word exists in dictionary
    * @param {string} word - Word to check
-   * @param {string} level - Dictionary level
    * @returns {boolean} True if word exists
    */
-  hasWord(word, level = 'basic') {
-    return this.lookup(word, level) !== null;
+  hasWord(word) {
+    return this.lookup(word) !== null;
   }
 
   /**

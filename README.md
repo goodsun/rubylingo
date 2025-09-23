@@ -66,8 +66,8 @@ RubyLingo
 ### 2.1 基本動作
 
 1. Web ページの日本語テキストを検出
-2. API で高精度形態素解析（IPA 辞書使用）
-3. 数万語レベルの辞書から英訳ルビを挿入
+2. API で軽量日本語分詞（TinySegmenter使用）
+3. EDICT/JMdict辞書から英訳ルビを挿入
 4. 元のページレイアウトを維持
 
 ### 2.2 辞書切り替え（唯一の設定）
@@ -90,35 +90,41 @@ RubyLingo
 ```
 Chrome拡張機能（フロントエンド）
     ↓
-形態素解析API（バックエンド）
+日本語分詞API（バックエンド）
     ↓
-大規模辞書データベース
+EDICT/JMdict統合辞書
 ```
 
 ### 3.2 API 設計
 
 ```javascript
-POST /api/tokenize
+POST /api/convert
 {
-  "text": "重要な会議で戦略を検討",
-  "dictionary": "business"
+  "text": "重要な会議で戦略を検討"
 }
 
 // レスポンス
-[
-  {word: "重要", english: "important"},
-  {word: "会議", english: "meeting"},
-  {word: "戦略", english: "strategy"},
-  {word: "検討", english: "consideration"}
-]
+{
+  "success": true,
+  "data": {
+    "original": "重要な会議で戦略を検討",
+    "converted": "<ruby>重要<rt>important</rt></ruby>な<ruby>会議<rt>meeting</rt></ruby>で<ruby>戦略<rt>strategy</rt></ruby>を<ruby>検討<rt>consideration</rt></ruby>",
+    "stats": {
+      "total_characters": 11,
+      "converted_words": 4,
+      "conversion_rate": "57%",
+      "processing_time": 2
+    }
+  }
+}
 ```
 
 ### 3.3 パフォーマンス要件
 
-- **レスポンス時間**: 1 秒以内
+- **レスポンス時間**: 500ms以内（コールドスタート除く）
 - **同時処理**: 1000 リクエスト/秒
-- **語彙数**: 最大 50,000 語
-- **精度**: 形態素解析 95%以上
+- **語彙数**: 約36万語（EDICT/JMdict）
+- **精度**: 主要語彙カバー率 95%以上
 
 ## 4. 大量シャワー効果測定
 
@@ -166,11 +172,12 @@ POST /api/tokenize
 - **英単語露出総数**: 1 セッション 1,000 語以上
 - **継続利用率**: 週 5 日以上利用 70%
 
-### 6.2 技術指標
+### 6.2 技術指標（EDICT版）
 
-- **API 応答速度**: 平均 500ms 以下
-- **形態素解析精度**: 95%以上
+- **API 応答速度**: 平均 200ms 以下（コールドスタート除く）
+- **語彙カバー率**: 主要語彙 95%以上
 - **エラー率**: 1%以下
+- **メモリ使用量**: 55MB以下（従来比30%削減）
 
 ## 7. ユーザーストーリー
 
@@ -224,3 +231,23 @@ POST /api/tokenize
 
 **最重要**: この拡張機能は英単語を覚えさせるツールではない。
 **大量の RubyLingo を浴び続けるための装置である。**
+
+---
+
+## ライセンス
+
+### ソフトウェアライセンス
+このソフトウェアは [MIT License](https://opensource.org/licenses/MIT) の下で提供されています。
+
+### 辞書データライセンス
+このシステムは JMdict/EDICT プロジェクトの辞書データを使用しています：
+
+- **JMdict/EDICT Dictionary**
+- **著作権**: © Electronic Dictionary Research and Development Group (EDRDG)
+- **ライセンス**: [Creative Commons Attribution-ShareAlike 4.0 International](https://creativecommons.org/licenses/by-sa/4.0/)
+- **出典**: http://www.edrdg.org/jmdict/j_jmdict.html
+
+#### 帰属表示
+「このソフトウェアは JMdict/EDICT 辞書ファイルを使用しています。これらのファイルは Electronic Dictionary Research and Development Group の財産であり、同グループのライセンスに従って使用されています。」
+
+JMdict/EDICT ライセンスの詳細: http://www.edrdg.org/edrdg/licence.html

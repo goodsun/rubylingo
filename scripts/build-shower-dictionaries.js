@@ -17,7 +17,7 @@ class ShowerDictionaryBuilder {
   }
 
   async buildShowerDictionaries() {
-    console.log("💎 60MB辞書生成を開始します...");
+    console.log(" 60MB辞書生成を開始します...");
 
     // Parse JMdict if not already done
     if (this.entries.length === 0) {
@@ -586,7 +586,7 @@ class ShowerDictionaryBuilder {
     console.log("=".repeat(50));
 
     for (const [level, stats] of Object.entries(results)) {
-      console.log(`\n💎 ${stats.description}:`);
+      console.log(`\n ${stats.description}:`);
       console.log(`   語彙数: ${stats.wordCount.toLocaleString()}語`);
       console.log(
         `   サイズ: ${

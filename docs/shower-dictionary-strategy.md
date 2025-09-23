@@ -1,4 +1,4 @@
-# 💎 RubyLingo 辞書戦略
+# RubyLingo 辞書戦略
 
 ## 🎯 基本方針
 

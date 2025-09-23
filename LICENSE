@@ -26,10 +26,31 @@ SOFTWARE.
 
 This software incorporates dictionary data from the JMdict/EDICT project:
 
-- **JMdict**: Japanese-Multilingual Dictionary
-- **Copyright**: Electronic Dictionary Research and Development Group (EDRDG)  
-- **License**: Creative Commons Attribution-ShareAlike 4.0 International
-- **Source**: https://www.edrdg.org/wiki/index.php/JMdict-EDICT_Dictionary_Project
+### JMdict/EDICT Dictionary
+- **Copyright**: © Electronic Dictionary Research and Development Group (EDRDG)
+- **License**: Creative Commons Attribution-ShareAlike 4.0 International (CC BY-SA 4.0)
+- **Source**: http://www.edrdg.org/jmdict/j_jmdict.html
+- **Project Homepage**: http://www.edrdg.org/
 
-The dictionary data is used in accordance with the EDRDG License Statement.
-Any distribution of this software must include this attribution notice.
+The JMdict/EDICT dictionary files are the property of the Electronic Dictionary 
+Research and Development Group, and are used in conformance with the Group's license.
+
+### License Requirements
+The EDRDG license requires that:
+1. Any software using the files must acknowledge the source
+2. The dictionary files must not be modified
+3. Any software which uses the files and is distributed must include this attribution
+
+### Attribution Statement
+"This software uses the JMdict/EDICT dictionary files. These files are the 
+property of the Electronic Dictionary Research and Development Group, and are 
+used in conformance with the Group's licence."
+
+For more information about JMdict/EDICT licensing, visit:
+http://www.edrdg.org/edrdg/licence.html
+
+### TinySegmenter Attribution
+This software also uses TinySegmenter, a compact Japanese tokenizer:
+- **Copyright**: © 2008 Taku Kudo  
+- **License**: New BSD License
+- **Repository**: https://github.com/shogo82148/node-tiny-segmenter

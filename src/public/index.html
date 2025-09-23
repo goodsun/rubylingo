@@ -4,13 +4,21 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>RubyLingo - RubyLingo</title>
+
+    <!-- Favicon and Icons -->
+    <link rel="icon" type="image/jpeg" href="images/logo.jpg" />
+    <link rel="apple-touch-icon" href="images/logo.jpg" />
+    <link rel="shortcut icon" type="image/jpeg" href="images/logo.jpg" />
+
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
     <div class="container">
       <header>
-        <h1>💎 RubyLingo</h1>
-        <p>日本語テキストに英訳ルビを付けて、大量の英単語に触れましょう</p>
+        <h1>RubyLingo</h1>
+        <p>
+          EDICT/JMdict辞書を使って日本語テキストに英訳ルビを付け、大量の英単語に触れましょう
+        </p>
       </header>
 
       <main>
@@ -24,16 +32,7 @@
         </div>
 
         <div class="controls">
-          <div class="dictionary-select">
-            <label for="dictionarySelect">辞書レベル:</label>
-            <select id="dictionarySelect">
-              <option value="basic">基礎辞書 (360,000語)</option>
-              <option value="business">ビジネス辞書 (360,000語)</option>
-              <option value="academic">学術辞書 (340,000語)</option>
-              <option value="comprehensive">総合辞書 (355,000語)</option>
-            </select>
-          </div>
-          <button id="convertBtn" class="convert-btn">💎 変換</button>
+          <button id="convertBtn" class="convert-btn">変換</button>
         </div>
 
         <div class="output-section">
@@ -42,6 +41,40 @@
           <div id="stats" class="stats"></div>
         </div>
       </main>
+
+      <footer
+        style="
+          margin-top: 40px;
+          padding: 20px;
+          border-top: 1px solid #ddd;
+          font-size: 12px;
+          color: #666;
+        "
+      >
+        <p><strong>辞書について:</strong></p>
+        <p>
+          このシステムはJMdict/EDICTプロジェクトの辞書データを使用しています。<br />
+          JMdict/EDICT は
+          <a href="http://www.edrdg.org/" target="_blank"
+            >Electronic Dictionary Research and Development Group</a
+          >
+          によって作成・維持されており、
+          <a
+            href="https://creativecommons.org/licenses/by-sa/4.0/"
+            target="_blank"
+            >Creative Commons Attribution-ShareAlike 4.0 International
+            License</a
+          >
+          の下で利用可能です。
+        </p>
+        <p>
+          © Electronic Dictionary Research and Development Group (EDRDG)<br />
+          JMdict/EDICT Project -
+          <a href="http://www.edrdg.org/jmdict/j_jmdict.html" target="_blank"
+            >http://www.edrdg.org/jmdict/j_jmdict.html</a
+          >
+        </p>
+      </footer>
     </div>
 
     <script src="script.js"></script>
