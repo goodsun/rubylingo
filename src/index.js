@@ -14,7 +14,12 @@ const dictionaryManager = new DictionaryManager();
 const analyzer = new EdictAnalyzer(dictionaryManager);
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: '*',
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  credentials: false
+}));
 app.use(express.json({ limit: "10mb" }));
 app.use(express.static(path.join(__dirname, "public")));
 
@@ -27,8 +32,19 @@ app.get("/api/health", (req, res) => {
   });
 });
 
+// OPTIONS handler for CORS preflight
+app.options('/api/convert', (req, res) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type');
+  res.sendStatus(200);
+});
+
 // Convert endpoint (real implementation)
-app.post("/api/convert", async (req, res) => {
+app.post('/api/convert', async (req, res) => {
+  // Add CORS headers
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Headers', 'Content-Type');
   try {
     const { text, format = "html" } = req.body;
 
@@ -145,6 +161,64 @@ app.get("/api/status", (req, res) => {
   }
 });
 
+// Available dictionaries endpoint
+app.get('/api/dictionaries', (req, res) => {
+  try {
+    const availableDictionaries = [];
+    
+    // Check which dictionaries are actually available
+    if (dictionaryManager.hasWord('テスト', 'business')) {
+      availableDictionaries.push({
+        value: 'business',
+        label: 'ビジネス辞書',
+        wordCount: '360,000'
+      });
+    }
+    
+    // For local development, check other dictionaries
+    if (process.env.NODE_ENV !== 'production') {
+      if (dictionaryManager.hasWord('テスト', 'basic')) {
+        availableDictionaries.push({
+          value: 'basic',
+          label: '基礎辞書',
+          wordCount: '360,000'
+        });
+      }
+      if (dictionaryManager.hasWord('テスト', 'academic')) {
+        availableDictionaries.push({
+          value: 'academic',
+          label: '学術辞書',
+          wordCount: '340,000'
+        });
+      }
+      if (dictionaryManager.hasWord('テスト', 'comprehensive')) {
+        availableDictionaries.push({
+          value: 'comprehensive',
+          label: '総合辞書',
+          wordCount: '355,000'
+        });
+      }
+    }
+    
+    res.json({
+      success: true,
+      data: {
+        dictionaries: availableDictionaries
+      }
+    });
+    
+  } catch (error) {
+    console.error('Dictionaries error:', error);
+    res.status(500).json({
+      success: false,
+      error: { 
+        code: 'DICTIONARIES_FAILED', 
+        message: '辞書リスト取得でエラーが発生しました' 
+      }
+    });
+  }
+});
+
 // SPA fallback
 app.get("*", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
@@ -161,7 +235,7 @@ async function initializeSystem() {
     // Preload basic shower dictionary
     dictionaryManager.preloadDictionaries(["basic"]);
 
-    // Initialize kuromoji
+    // Initialize analyzer
     await analyzer.initialize();
 
     console.log("✅ RubyLingo system initialized successfully");

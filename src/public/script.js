@@ -21,7 +21,7 @@ document.addEventListener("DOMContentLoaded", function () {
     stats.textContent = "";
 
     try {
-      const response = await fetch("/api/convert", {
+      const response = await fetch(`${window.API_BASE_URL}/api/convert`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -32,10 +32,15 @@ document.addEventListener("DOMContentLoaded", function () {
         }),
       });
 
-      const result = await response.json();
-
       // Debug: Display raw API response
-      console.log("API Response:", result);
+      console.log('API Response Status:', response.status);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const result = await response.json();
+      console.log('API Response:', result);
 
       if (result.success) {
         // Display converted text
@@ -51,7 +56,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     処理時間: ${statsData.processing_time}ms
                 `;
       } else {
-        throw new Error(result.error.message || "変換に失敗しました");
+        throw new Error(result.error?.message || "変換に失敗しました");
       }
     } catch (error) {
       console.error("Conversion error:", error);
@@ -64,7 +69,7 @@ document.addEventListener("DOMContentLoaded", function () {
     } finally {
       // Reset button state
       convertBtn.disabled = false;
-      convertBtn.textContent = " 変換";
+      convertBtn.textContent = "変換";
     }
   });
 

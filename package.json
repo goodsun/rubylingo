@@ -22,7 +22,9 @@
   },
   "devDependencies": {
     "jest": "^29.7.0",
-    "nodemon": "^3.0.0"
+    "nodemon": "^3.0.0",
+    "serverless": "^4.19.1",
+    "serverless-offline": "^14.4.0"
   },
   "keywords": [
     "japanese",

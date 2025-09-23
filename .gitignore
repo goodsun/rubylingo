@@ -78,3 +78,7 @@ logs
 # Build outputs
 dist/
 build/
+
+# Dictionary raw data
+data/raw/
+data/JMdict_e.xml
