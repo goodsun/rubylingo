@@ -3,70 +3,41 @@ const path = require('path');
 
 class DictionaryManager {
   constructor() {
-    this.dictionaries = {};
-    this.dictionaryPath = path.join(__dirname, '..', '..', 'dictionaries');
-    this.showerDictionaryPath = path.join(__dirname, '..', '..', 'dictionaries', 'shower');
-    this.loadedLevels = new Set();
-    this.useShowerDictionaries = true; // Use 60MB shower dictionaries by default
+    this.dictionary = null;
+    this.dictionaryPath = path.join(__dirname, '..', '..', 'dictionaries', 'shower');
+    this.isLoaded = false;
   }
 
   /**
-   * Load dictionary for specified level
-   * @param {string} level - Dictionary level (basic, business, academic, comprehensive)
+   * Load the unified EDICT dictionary
    */
-  loadDictionary(level) {
-    if (this.loadedLevels.has(level)) {
+  loadDictionary() {
+    if (this.isLoaded) {
       return;
     }
 
-    // Determine which dictionary to use
-    let filePath;
-    let dictionaryType;
-    
-    if (this.useShowerDictionaries) {
-      // Map level names for shower dictionaries
-      const showerLevelMap = {
-        'basic': 'business', // Use business shower dictionary as fallback since daily failed
-        'business': 'business',
-        'academic': 'academic', 
-        'comprehensive': 'comprehensive'
-      };
-      
-      const showerLevel = showerLevelMap[level] || 'business';
-      filePath = path.join(this.showerDictionaryPath, `${showerLevel}.json`);
-      dictionaryType = 'シャワー';
-      
-      // Fallback to original if shower dictionary not found
-      if (!fs.existsSync(filePath)) {
-        filePath = path.join(this.dictionaryPath, `${level}.json`);
-        dictionaryType = '従来';
-      }
-    } else {
-      filePath = path.join(this.dictionaryPath, `${level}.json`);
-      dictionaryType = '従来';
-    }
+    const filePath = path.join(this.dictionaryPath, 'business.json');
     
     if (!fs.existsSync(filePath)) {
       throw new Error(`Dictionary file not found: ${filePath}`);
     }
 
-    console.log(`📚 Loading ${level} ${dictionaryType}辞書...`);
+    console.log(`📚 Loading EDICT unified dictionary...`);
     const content = fs.readFileSync(filePath, 'utf8');
-    this.dictionaries[level] = JSON.parse(content);
-    this.loadedLevels.add(level);
+    this.dictionary = JSON.parse(content);
+    this.isLoaded = true;
     
-    const wordCount = Object.keys(this.dictionaries[level]).length;
+    const wordCount = Object.keys(this.dictionary).length;
     const fileSize = Math.round(fs.statSync(filePath).size / 1024 / 1024 * 10) / 10;
-    console.log(`✅ Loaded ${wordCount.toLocaleString()} words from ${level} ${dictionaryType}辞書 (${fileSize}MB)`);
+    console.log(`✅ Loaded ${wordCount.toLocaleString()} words from EDICT unified dictionary (${fileSize}MB)`);
   }
 
   /**
    * Ensure dictionary is loaded
-   * @param {string} level 
    */
-  ensureDictionaryLoaded(level) {
-    if (!this.loadedLevels.has(level)) {
-      this.loadDictionary(level);
+  ensureDictionaryLoaded() {
+    if (!this.isLoaded) {
+      this.loadDictionary();
     }
   }
 
@@ -76,22 +47,21 @@ class DictionaryManager {
    * @returns {Object|null} Dictionary entry or null
    */
   lookup(word) {
-    this.ensureDictionaryLoaded('basic');
+    this.ensureDictionaryLoaded();
     
-    const dictionary = this.dictionaries['basic'];
-    if (!dictionary) {
+    if (!this.dictionary) {
       return null;
     }
 
     // Direct lookup
-    if (dictionary[word]) {
-      return dictionary[word];
+    if (this.dictionary[word]) {
+      return this.dictionary[word];
     }
 
     // Try normalized forms
     const normalized = this.normalizeWord(word);
-    if (normalized !== word && dictionary[normalized]) {
-      return dictionary[normalized];
+    if (normalized !== word && this.dictionary[normalized]) {
+      return this.dictionary[normalized];
     }
 
     return null;
@@ -169,101 +139,84 @@ class DictionaryManager {
 
   /**
    * Get dictionary statistics
-   * @param {string} level - Dictionary level
    * @returns {Object} Statistics object
    */
-  getStats(level = 'basic') {
-    this.ensureDictionaryLoaded(level);
+  getStats() {
+    this.ensureDictionaryLoaded();
     
-    const dictionary = this.dictionaries[level];
-    const words = Object.keys(dictionary);
+    if (!this.dictionary) {
+      return {
+        level: 'unified',
+        totalWords: 0,
+        memoryUsage: 0,
+        loadTime: null
+      };
+    }
+    
+    const words = Object.keys(this.dictionary);
     
     return {
-      level: level,
+      level: 'unified',
       totalWords: words.length,
-      memoryUsage: JSON.stringify(dictionary).length,
+      memoryUsage: JSON.stringify(this.dictionary).length,
       loadTime: Date.now()
     };
   }
 
   /**
-   * Get available dictionary levels
+   * Get available dictionary levels (returns single unified level for EDICT)
    * @returns {Array} Array of available levels
    */
   getAvailableLevels() {
-    const levels = [];
-    const levelNames = ['basic', 'business', 'academic', 'comprehensive'];
+    const filePath = path.join(this.dictionaryPath, 'business.json');
     
-    for (const level of levelNames) {
-      let filePath;
-      
-      if (this.useShowerDictionaries) {
-        const showerLevelMap = {
-          'basic': 'business',
-          'business': 'business', 
-          'academic': 'academic',
-          'comprehensive': 'comprehensive'
-        };
-        
-        const showerLevel = showerLevelMap[level] || 'business';
-        filePath = path.join(this.showerDictionaryPath, `${showerLevel}.json`);
-        
-        // Fallback to original
-        if (!fs.existsSync(filePath)) {
-          filePath = path.join(this.dictionaryPath, `${level}.json`);
-        }
-      } else {
-        filePath = path.join(this.dictionaryPath, `${level}.json`);
-      }
-      
-      if (fs.existsSync(filePath)) {
-        levels.push(level);
-      }
+    if (fs.existsSync(filePath)) {
+      return ['unified'];
     }
     
-    return levels;
+    return [];
   }
 
   /**
-   * Preload multiple dictionary levels
-   * @param {Array} levels - Array of levels to preload
+   * Preload the unified dictionary
    */
-  preloadDictionaries(levels = ['basic']) {
-    console.log('🚀 Preloading dictionaries:', levels.join(', '));
+  preloadDictionaries() {
+    console.log('🚀 Preloading EDICT unified dictionary');
     
-    for (const level of levels) {
-      try {
-        this.loadDictionary(level);
-      } catch (error) {
-        console.warn(`⚠️ Failed to load ${level} dictionary:`, error.message);
-      }
+    try {
+      this.loadDictionary();
+    } catch (error) {
+      console.warn(`⚠️ Failed to load unified dictionary:`, error.message);
     }
     
     console.log('✅ Dictionary preloading complete');
   }
 
   /**
-   * Get memory usage of loaded dictionaries
+   * Get memory usage of loaded dictionary
    * @returns {Object} Memory usage stats
    */
   getMemoryUsage() {
-    const usage = {};
-    let totalSize = 0;
-    
-    for (const level of this.loadedLevels) {
-      const size = JSON.stringify(this.dictionaries[level]).length;
-      usage[level] = {
-        words: Object.keys(this.dictionaries[level]).length,
-        bytes: size,
-        mb: Math.round(size / 1024 / 1024 * 100) / 100
+    if (!this.isLoaded || !this.dictionary) {
+      return {
+        unified: { words: 0, bytes: 0, mb: 0 },
+        total: { levels: 0, bytes: 0, mb: 0 }
       };
-      totalSize += size;
     }
     
+    const size = JSON.stringify(this.dictionary).length;
+    const usage = {
+      unified: {
+        words: Object.keys(this.dictionary).length,
+        bytes: size,
+        mb: Math.round(size / 1024 / 1024 * 100) / 100
+      }
+    };
+    
     usage.total = {
-      levels: this.loadedLevels.size,
-      bytes: totalSize,
-      mb: Math.round(totalSize / 1024 / 1024 * 100) / 100
+      levels: 1,
+      bytes: size,
+      mb: Math.round(size / 1024 / 1024 * 100) / 100
     };
     
     return usage;

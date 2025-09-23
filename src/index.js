@@ -232,8 +232,8 @@ async function initializeSystem() {
   try {
     console.log("🚀 Initializing RubyLingo system...");
 
-    // Preload basic shower dictionary
-    dictionaryManager.preloadDictionaries(["basic"]);
+    // Preload unified dictionary
+    dictionaryManager.preloadDictionaries();
 
     // Initialize analyzer
     await analyzer.initialize();
