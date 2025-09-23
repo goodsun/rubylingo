@@ -1,247 +1,648 @@
-# Chrome拡張機能 開発から公開までの完全ガイド
+# RubyLingo 大量英単語シャワー Chrome拡張機能 開発フロー
 
 ## 概要
-Chrome拡張機能を独自開発し、Chrome Web Storeで公開するまでの詳細な手順を解説します。
+「大量英単語シャワー」を実現するChrome拡張機能の開発から公開までの完全ガイド。
 
-## 1. 開発準備（所要時間: 30分）
+## 基本哲学
 
-### 1.1 プロジェクトディレクトリの作成
+### 開発の最重要原則
+**シンプルさこそが大量シャワーを実現する**
+- 複雑な機能は開発しない（シャワーの妨げになる）
+- 設定項目は最小限（辞書選択とON/OFFのみ）
+- 学習管理機能は一切実装しない
+
+### 開発目標
+1. **大量語彙への露出**: 数万語レベルの英単語シャワー
+2. **高速処理**: 1秒以内のルビ表示
+3. **読書体験維持**: コンテンツ消費を阻害しない
+4. **継続可能性**: 毎日使い続けられる軽量性
+
+## 開発フロー
+
+### Phase 1: 基本シャワー実装（2週間）
+
+#### Week 1: Chrome拡張機能の基盤
 ```bash
-mkdir rubylingo
-cd rubylingo
+# プロジェクト初期化
+mkdir rubylingo-shower
+cd rubylingo-shower
 
-# 最小構成ファイルの作成
+# 基本ファイル構成
 touch manifest.json
 touch content.js
-touch background.js
-touch popup.html
+touch background.js  
+touch popup.html popup.js popup.css
+
+# APIクライアント作成
+mkdir api
+touch api/shower-client.js
 ```
 
-### 1.2 開発環境の準備
-- テキストエディタ（VS Code推奨）
-- Google Chrome（最新版）
-- Git（バージョン管理用）
-
-## 2. ローカル開発（所要時間: 1-2週間）
-
-### 2.1 必須ファイル構成
-```
-rubylingo/
-├── manifest.json      # 拡張機能の設定ファイル
-├── content.js         # Webページ操作スクリプト
-├── background.js      # バックグラウンド処理
-├── popup.html         # ポップアップUI
-├── popup.js           # ポップアップのロジック
-├── popup.css          # ポップアップのスタイル
-└── icons/             # アイコンファイル
-    ├── icon16.png
-    ├── icon48.png
-    └── icon128.png
-```
-
-### 2.2 manifest.json の基本構造
+**1.1 manifest.json（シャワー特化）**
 ```json
 {
   "manifest_version": 3,
-  "name": "RubyLingo",
+  "name": "RubyLingo - 英単語シャワー",
   "version": "1.0.0",
-  "description": "日本語Webページに英訳ルビを自動挿入",
-  "permissions": ["activeTab", "storage"],
+  "description": "大量英単語シャワーで語彙爆増",
+  
+  "permissions": ["storage"],
+  "host_permissions": ["<all_urls>"],
+  
   "action": {
-    "default_popup": "popup.html",
-    "default_icon": {
-      "16": "icons/icon16.png",
-      "48": "icons/icon48.png",
-      "128": "icons/icon128.png"
-    }
+    "default_popup": "popup.html"
   },
-  "content_scripts": [
-    {
-      "matches": ["<all_urls>"],
-      "js": ["content.js"]
-    }
-  ],
+  
+  "content_scripts": [{
+    "matches": ["<all_urls>"],
+    "js": ["api/shower-client.js", "content.js"],
+    "run_at": "document_idle"
+  }],
+  
   "background": {
     "service_worker": "background.js"
   }
 }
 ```
 
-### 2.3 開発手順
-1. **manifest.json作成**: バージョン、権限、スクリプト設定
-2. **基本機能実装**: content.js でDOM操作ロジック
-3. **UI実装**: popup.html/js でON/OFF制御
-4. **状態管理**: Chrome Storage APIで設定保存
-5. **デバッグ・改善**: 実サイトでテスト
-
-## 3. ローカルテスト（随時実施）
-
-### 3.1 拡張機能の読み込み
-1. Chromeを開く
-2. アドレスバーに `chrome://extensions/` を入力
-3. 右上の「デベロッパーモード」をON
-4. 「パッケージ化されていない拡張機能を読み込む」をクリック
-5. 開発フォルダ（rubylingo）を選択
-
-### 3.2 テスト手順
-- 各種Webサイトで動作確認
-- コンソールでエラーチェック
-- パフォーマンス測定
-- メモリ使用量確認
-
-### 3.3 更新方法
-1. コードを修正
-2. chrome://extensions/ で「更新」ボタンクリック
-3. ページをリロードして確認
-
-## 4. 公開準備（所要時間: 2-3日）
-
-### 4.1 必要な素材
-- **アイコン**: 
-  - 128x128px（ストア表示用）
-  - 48x48px（拡張機能管理画面用）
-  - 16x16px（ツールバー用）
-- **スクリーンショット**:
-  - 1280x800px または 640x400px
-  - 最低1枚、最大5枚
-  - 実際の動作画面をキャプチャ
-- **プロモーション画像**（任意）:
-  - 440x280px タイル画像
-
-### 4.2 テキスト準備
-- **拡張機能名**: 45文字以内
-- **短い説明**: 132文字以内
-- **詳細説明**: 
-  - 機能説明
-  - 使い方
-  - 特徴
-  - 更新履歴
-- **プライバシーポリシー**: データ収集について明記
-
-### 4.3 多言語対応
-- 英語は必須
-- 日本語版も用意推奨
-- _locales/ フォルダで管理
-
-## 5. デベロッパー登録（初回のみ）
-
-### 5.1 登録手順
-1. [Chrome Web Store Developer Dashboard](https://chrome.google.com/webstore/developer/dashboard) にアクセス
-2. Googleアカウントでログイン
-3. 開発者登録料 $5 を支払い（クレジットカード必要）
-4. 開発者情報を入力
-
-### 5.2 必要情報
-- メールアドレス
-- 開発者名（公開される）
-- 支払い情報
-
-## 6. ストア申請（所要時間: 1-2日）
-
-### 6.1 パッケージ作成
-```bash
-# 不要ファイルを除外してZIP化
-zip -r rubylingo.zip . -x ".*" -x "__MACOSX" -x "*.DS_Store"
+**1.2 シャワーAPIクライアント**
+```javascript
+// api/shower-client.js
+class ShowerAPIClient {
+  constructor() {
+    this.baseURL = 'https://api.rubylingo.com';
+    this.cache = new Map();
+  }
+  
+  async getWordShower(text, dictionary = 'basic') {
+    const cacheKey = `${dictionary}:${text.slice(0, 100)}`;
+    if (this.cache.has(cacheKey)) {
+      return this.cache.get(cacheKey);
+    }
+    
+    try {
+      const response = await fetch(`${this.baseURL}/api/tokenize`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text, dictionary })
+      });
+      
+      const result = await response.json();
+      this.cache.set(cacheKey, result);
+      return result;
+      
+    } catch (error) {
+      console.error('Shower API Error:', error);
+      return { tokens: [] }; // フォールバック
+    }
+  }
+}
 ```
 
-### 6.2 アップロード手順
-1. Developer Dashboardで「新しいアイテム」クリック
-2. rubylingo.zipをアップロード
-3. 必要情報を入力:
-   - **カテゴリー**: 生産性、教育など
-   - **言語**: 日本語、英語
-   - **地域**: 配信地域を選択
-   - **価格**: 無料/有料設定
+**1.3 シャワー表示エンジン**
+```javascript
+// content.js - シャワー専用
+class WordShowerEngine {
+  constructor() {
+    this.apiClient = new ShowerAPIClient();
+    this.isEnabled = true;
+    this.currentDictionary = 'basic';
+    this.processedElements = new WeakSet();
+  }
+  
+  async startShower() {
+    // 日本語テキストを検出してシャワー開始
+    const textNodes = this.findJapaneseTextNodes();
+    
+    for (const node of textNodes) {
+      await this.addWordShower(node);
+    }
+  }
+  
+  async addWordShower(textNode) {
+    const text = textNode.textContent;
+    const { tokens } = await this.apiClient.getWordShower(text, this.currentDictionary);
+    
+    // ルビ生成
+    const fragment = this.createShowerFragment(text, tokens);
+    textNode.parentNode.replaceChild(fragment, textNode);
+  }
+  
+  createShowerFragment(text, tokens) {
+    const fragment = document.createDocumentFragment();
+    let lastIndex = 0;
+    
+    tokens.forEach(token => {
+      const index = text.indexOf(token.word, lastIndex);
+      
+      // 前のテキスト
+      if (index > lastIndex) {
+        fragment.appendChild(
+          document.createTextNode(text.slice(lastIndex, index))
+        );
+      }
+      
+      // ルビ付き単語（シャワー）
+      const ruby = document.createElement('ruby');
+      ruby.textContent = token.word;
+      ruby.className = 'word-shower';
+      
+      const rt = document.createElement('rt');
+      rt.textContent = token.english;
+      rt.className = 'shower-translation';
+      
+      ruby.appendChild(rt);
+      fragment.appendChild(ruby);
+      
+      lastIndex = index + token.word.length;
+    });
+    
+    // 残りのテキスト
+    if (lastIndex < text.length) {
+      fragment.appendChild(
+        document.createTextNode(text.slice(lastIndex))
+      );
+    }
+    
+    return fragment;
+  }
+}
+```
 
-### 6.3 ストア掲載情報
-- アイコン、スクリーンショットアップロード
-- 説明文入力（マークダウン使用可）
-- プライバシーポリシーURL（必要な場合）
-- サポート連絡先
+#### Week 2: UI/UX とスタイリング
 
-## 7. 審査プロセス（所要時間: 1-7日）
+**2.1 超シンプルポップアップ**
+```html
+<!-- popup.html -->
+<!DOCTYPE html>
+<html>
+<head>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="shower-control">
+    <h1>英単語シャワー</h1>
+    
+    <div class="toggle">
+      <input type="checkbox" id="showerToggle">
+      <label for="showerToggle">シャワー開始</label>
+    </div>
+    
+    <div class="dictionary-select">
+      <label>シャワー強度:</label>
+      <select id="dictionarySelect">
+        <option value="basic">基礎 (5,000語)</option>
+        <option value="business">ビジネス (10,000語)</option>
+        <option value="academic">学術 (20,000語)</option>
+        <option value="comprehensive">最大 (50,000語)</option>
+      </select>
+    </div>
+  </div>
+  <script src="popup.js"></script>
+</body>
+</html>
+```
 
-### 7.1 審査の流れ
-1. **自動審査**: 数時間〜1日
-   - マニフェスト検証
-   - セキュリティチェック
-   - ポリシー違反確認
-2. **手動審査**: 1-7日（権限による）
-   - 特定の権限使用時
-   - ランダムサンプリング
+**2.2 シャワー専用スタイル**
+```css
+/* popup.css */
+.shower-control {
+  width: 250px;
+  padding: 20px;
+  font-family: 'Segoe UI', sans-serif;
+}
 
-### 7.2 審査基準
-- Chrome Web Store ポリシー準拠
-- 適切な権限使用
-- 明確な機能説明
-- ユーザープライバシー保護
+.shower-control h1 {
+  color: #2196F3;
+  font-size: 18px;
+  margin: 0 0 15px 0;
+  text-align: center;
+}
 
-### 7.3 却下時の対応
-- 却下理由を確認
-- 問題箇所を修正
-- 再申請（通常24時間以内）
+.toggle {
+  margin-bottom: 15px;
+  text-align: center;
+}
 
-## 8. 公開後の運用
+.dictionary-select label {
+  font-size: 12px;
+  color: #666;
+}
 
-### 8.1 ユーザーサポート
-- レビューへの返信
-- バグレポート対応
-- 機能リクエスト管理
+.dictionary-select select {
+  width: 100%;
+  padding: 8px;
+  margin-top: 5px;
+}
 
-### 8.2 アップデート
-1. コード修正
-2. manifest.jsonのバージョン更新
-3. 新しいZIPファイル作成
-4. Dashboardからアップロード
-5. 自動的にユーザーに配信
+/* ページ内シャワースタイル */
+.word-shower {
+  background: rgba(33, 150, 243, 0.1);
+  border-radius: 2px;
+  margin: 0 1px;
+}
 
-### 8.3 分析・改善
-- インストール数の追跡
-- ユーザーレビュー分析
-- クラッシュレポート確認
-- 使用統計の活用
+.shower-translation {
+  font-size: 0.7em;
+  color: #1976D2;
+  font-weight: 500;
+}
+```
 
-## 9. RubyLingo固有の注意事項
+### Phase 2: シャワーAPI開発（4週間）
 
-### 9.1 権限について
-- `activeTab`権限のみ使用で審査は迅速
-- 全サイト対象(`<all_urls>`)の場合は理由を明確に
-- storage権限は設定保存に必須
+#### Week 3-4: バックエンドAPI
 
-### 9.2 コンテンツポリシー
-- 教育目的であることを強調
-- 翻訳精度についての免責事項
-- 第三者コンテンツへの影響を説明
+**2.1 FastAPI サーバー構築**
+```python
+# main.py
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel
+import MeCab
+import json
+import asyncio
+from typing import List, Dict
 
-### 9.3 パフォーマンス
-- 大量DOM操作による負荷を考慮
-- 遅延読み込みの実装推奨
-- メモリリーク対策必須
+app = FastAPI(title="RubyLingo Shower API")
 
-## 10. よくある問題と解決策
+class ShowerRequest(BaseModel):
+    text: str
+    dictionary: str = "basic"
+    max_words: int = 1000
 
-### 10.1 審査での却下理由
-- **権限の過剰要求**: 最小限の権限に
-- **説明不足**: 機能を詳細に記載
-- **品質問題**: 十分なテスト実施
+class WordToken(BaseModel):
+    word: str
+    reading: str
+    english: str
+    frequency: int
 
-### 10.2 技術的な課題
-- **CSPエラー**: content_scriptsで外部リソース使用制限
-- **非同期処理**: Promise/async-awaitの適切な使用
-- **メモリ管理**: 不要なリスナーの削除
+class ShowerResponse(BaseModel):
+    tokens: List[WordToken]
+    total_words: int
+    processing_time: int
 
-### 10.3 ユーザーからのフィードバック
-- 低評価レビューには迅速対応
-- 共通の問題はFAQ作成
-- 定期的なアップデートで信頼性向上
+class WordShowerProcessor:
+    def __init__(self):
+        self.mecab = MeCab.Tagger('-d /usr/local/lib/mecab/dic/ipadic')
+        self.dictionaries = self.load_dictionaries()
+        
+    def load_dictionaries(self):
+        """50,000語の大規模辞書読み込み"""
+        with open('dictionaries/comprehensive.json', 'r') as f:
+            comprehensive = json.load(f)
+        with open('dictionaries/business.json', 'r') as f:
+            business = json.load(f)
+        with open('dictionaries/basic.json', 'r') as f:
+            basic = json.load(f)
+            
+        return {
+            'comprehensive': comprehensive,
+            'academic': comprehensive,  # サブセット
+            'business': business,
+            'basic': basic
+        }
+    
+    async def process_for_shower(self, text: str, dictionary: str) -> List[WordToken]:
+        """大量シャワー生成処理"""
+        import time
+        start_time = time.time()
+        
+        # 形態素解析
+        tokens = []
+        node = self.mecab.parseToNode(text)
+        dict_data = self.dictionaries[dictionary]
+        
+        while node:
+            if self.is_shower_target(node):
+                word = node.surface
+                base_form = node.feature.split(',')[6]
+                reading = node.feature.split(',')[7]
+                
+                # 辞書から英訳取得
+                english = dict_data.get(word) or dict_data.get(base_form)
+                if english:
+                    tokens.append(WordToken(
+                        word=word,
+                        reading=reading if reading != '*' else word,
+                        english=english,
+                        frequency=self.get_frequency(word, dict_data)
+                    ))
+            node = node.next
+            
+        processing_time = int((time.time() - start_time) * 1000)
+        return tokens, processing_time
+    
+    def is_shower_target(self, node):
+        """シャワー対象の品詞チェック"""
+        pos = node.feature.split(',')[0]
+        return pos in ['名詞', '動詞', '形容詞', '副詞']
+
+@app.post("/api/tokenize", response_model=ShowerResponse)
+async def create_word_shower(request: ShowerRequest):
+    processor = WordShowerProcessor()
+    
+    try:
+        tokens, processing_time = await processor.process_for_shower(
+            request.text, request.dictionary
+        )
+        
+        return ShowerResponse(
+            tokens=tokens,
+            total_words=len(tokens),
+            processing_time=processing_time
+        )
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Shower generation failed: {e}")
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)
+```
+
+#### Week 5-6: 大規模辞書整備
+
+**2.2 50,000語辞書作成スクリプト**
+```python
+# dictionary_builder.py
+import pandas as pd
+import json
+from collections import defaultdict
+
+class MassiveDictionaryBuilder:
+    def __init__(self):
+        self.word_frequencies = defaultdict(int)
+        self.translations = {}
+        
+    def build_comprehensive_dictionary(self):
+        """50,000語の包括辞書構築"""
+        
+        # 1. 基本語彙 (5,000語)
+        basic_words = self.load_basic_vocabulary()
+        
+        # 2. ビジネス語彙 (10,000語)  
+        business_words = self.load_business_vocabulary()
+        
+        # 3. 学術語彙 (20,000語)
+        academic_words = self.load_academic_vocabulary()
+        
+        # 4. 専門語彙 (15,000語)
+        specialized_words = self.load_specialized_vocabulary()
+        
+        # 統合と重複除去
+        comprehensive = {
+            **basic_words,
+            **business_words, 
+            **academic_words,
+            **specialized_words
+        }
+        
+        return comprehensive
+    
+    def save_dictionaries(self):
+        """レベル別辞書保存"""
+        comprehensive = self.build_comprehensive_dictionary()
+        
+        # 使用頻度でソート
+        sorted_words = sorted(
+            comprehensive.items(),
+            key=lambda x: self.word_frequencies[x[0]],
+            reverse=True
+        )
+        
+        # レベル別に分割
+        dictionaries = {
+            'basic': dict(sorted_words[:5000]),
+            'business': dict(sorted_words[:10000]),
+            'academic': dict(sorted_words[:20000]), 
+            'comprehensive': dict(sorted_words[:50000])
+        }
+        
+        # ファイル保存
+        for level, words in dictionaries.items():
+            with open(f'dictionaries/{level}.json', 'w', encoding='utf-8') as f:
+                json.dump(words, f, ensure_ascii=False, indent=2)
+                
+        print(f"辞書構築完了: {len(comprehensive)}語")
+
+if __name__ == "__main__":
+    builder = MassiveDictionaryBuilder()
+    builder.save_dictionaries()
+```
+
+### Phase 3: 本格運用対応（4週間）
+
+#### Week 7-8: パフォーマンス最適化
+
+**3.1 高速シャワー処理**
+```javascript
+// 高速化されたcontent.js
+class OptimizedShowerEngine {
+  constructor() {
+    this.apiClient = new ShowerAPIClient();
+    this.cache = new Map();
+    this.processQueue = [];
+    this.isProcessing = false;
+  }
+  
+  async startOptimizedShower() {
+    // バッチ処理でAPI呼び出し最小化
+    const textChunks = this.collectTextChunks();
+    
+    // 並列処理
+    const promises = textChunks.map(chunk => 
+      this.processBatch(chunk)
+    );
+    
+    await Promise.all(promises);
+  }
+  
+  async processBatch(textChunk) {
+    // 大量テキストを効率的に処理
+    const batchSize = 1000;
+    const text = textChunk.map(node => node.textContent).join('\n');
+    
+    if (text.length > batchSize) {
+      const { tokens } = await this.apiClient.getWordShower(text);
+      this.applyShowerToChunk(textChunk, tokens);
+    }
+  }
+  
+  // インターセクションオブザーバーで可視範囲のみ処理
+  setupLazyShower() {
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          this.addWordShower(entry.target);
+        }
+      });
+    });
+    
+    document.querySelectorAll('p, div, span').forEach(el => {
+      if (this.hasJapanese(el.textContent)) {
+        observer.observe(el);
+      }
+    });
+  }
+}
+```
+
+#### Week 9-10: デプロイメント・運用
+
+**3.2 CI/CD パイプライン**
+```yaml
+# .github/workflows/shower-deploy.yml
+name: RubyLingo Shower Deployment
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  test-shower-quality:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    
+    - name: シャワー品質テスト
+      run: |
+        npm test
+        python test_shower_api.py
+        
+    - name: 辞書整合性チェック
+      run: |
+        python validate_dictionaries.py
+        
+  deploy-extension:
+    needs: test-shower-quality
+    runs-on: ubuntu-latest
+    steps:
+    - name: Chrome Web Store 自動デプロイ
+      run: |
+        npm run build
+        npm run deploy:chrome-store
+        
+  deploy-api:
+    needs: test-shower-quality  
+    runs-on: ubuntu-latest
+    steps:
+    - name: API サーバーデプロイ
+      run: |
+        docker build -t shower-api .
+        docker push gcr.io/project/shower-api
+        kubectl apply -f k8s/
+```
+
+**3.3 監視・アラート**
+```python
+# monitoring.py
+class ShowerMonitoring:
+    def __init__(self):
+        self.metrics = {
+            'shower_requests_per_second': 0,
+            'avg_response_time': 0,
+            'shower_quality_score': 0,
+            'error_rate': 0
+        }
+    
+    def monitor_shower_health(self):
+        """シャワー健全性監視"""
+        while True:
+            # API応答時間チェック
+            if self.metrics['avg_response_time'] > 1000:
+                self.alert_slow_shower()
+                
+            # エラー率チェック  
+            if self.metrics['error_rate'] > 0.01:
+                self.alert_shower_degradation()
+                
+            # シャワー品質チェック
+            if self.metrics['shower_quality_score'] < 0.9:
+                self.alert_quality_issue()
+                
+            time.sleep(60)
+    
+    def alert_slow_shower(self):
+        """シャワー速度低下アラート"""
+        send_slack_alert("🚿 シャワー速度低下検出")
+        
+    def alert_shower_degradation(self):  
+        """シャワー品質低下アラート"""
+        send_slack_alert("⚠️ シャワー品質低下")
+```
+
+## 開発体制
+
+### 必要なスキルセット
+- **フロントエンド**: JavaScript, Chrome Extension API
+- **バックエンド**: Python, FastAPI, MeCab
+- **インフラ**: Docker, Kubernetes, GCP
+- **辞書**: 語彙学、翻訳、データサイエンス
+
+### 開発チーム構成（推奨）
+- **フロントエンドエンジニア×1**: Chrome拡張機能開発
+- **バックエンドエンジニア×1**: API・インフラ開発  
+- **言語学者×1**: 辞書構築・品質管理
+- **プロダクトマネージャー×1**: シャワー効果最適化
+
+## 品質保証
+
+### テスト戦略
+```javascript
+// シャワー品質テスト
+describe('WordShower Quality Tests', () => {
+  test('大量語彙露出テスト', async () => {
+    const text = '重要な会議で新しい戦略を検討した結果、効率的な解決策を発見した。';
+    const result = await showerEngine.process(text);
+    
+    // シャワー密度チェック
+    expect(result.tokens.length).toBeGreaterThan(5);
+    
+    // 露出品質チェック
+    expect(result.coverage_rate).toBeGreaterThan(0.8);
+  });
+  
+  test('高速レスポンステスト', async () => {
+    const start = Date.now();
+    await showerEngine.process(largeSampleText);
+    const duration = Date.now() - start;
+    
+    expect(duration).toBeLessThan(1000); // 1秒以内
+  });
+});
+```
+
+### 成功指標
+- **シャワー密度**: 1文あたり平均3語以上の英単語露出
+- **処理速度**: 95%のリクエストが1秒以内
+- **利用継続率**: 週次アクティブ率70%以上
+- **露出総量**: ユーザーあたり1日3,000語以上
+
+## リリース戦略
+
+### Phase 1: クローズドβ（100ユーザー）
+- 基本シャワー機能検証
+- レスポンス速度最適化
+- 初期品質改善
+
+### Phase 2: オープンβ（1,000ユーザー）  
+- 大量辞書での実証
+- 負荷テスト・スケール検証
+- ユーザーフィードバック収集
+
+### Phase 3: 一般公開（10,000ユーザー目標）
+- Chrome Web Store公開
+- マーケティング展開
+- 継続的改善サイクル確立
 
 ## まとめ
 
-Chrome拡張機能の開発は、適切な手順を踏めば個人開発者でも十分可能です。RubyLingoのようなシンプルな機能であれば、2-3週間での公開が現実的です。重要なのは：
+この開発フローは「大量英単語シャワー」という明確な目標に特化している。
 
-1. **ユーザー価値の明確化**: 何を解決するか
-2. **シンプルな実装**: 複雑な機能は避ける
-3. **十分なテスト**: 実環境での動作確認
-4. **継続的な改善**: ユーザーフィードバックを活かす
+**開発の核心原則**:
+1. **シンプルさ**: 複雑な機能は一切開発しない
+2. **大量語彙**: 50,000語レベルの圧倒的な辞書
+3. **高速処理**: 1秒以内のシャワー開始
+4. **継続性**: 毎日使い続けられる軽量性
 
-開発を始める前に、この文書を通読し、全体の流れを把握することをお勧めします。
+技術的には十分実現可能であり、適切な開発体制で10週間程度での完成が見込める。

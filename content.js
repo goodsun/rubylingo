@@ -9,12 +9,17 @@ const processedElements = new WeakSet();
 
 // 拡張機能の状態
 let isEnabled = true;
+let currentDictionary = {};
 
 // 初期化
 async function init() {
   // 状態を取得
-  const result = await chrome.storage.sync.get(['enabled']);
-  isEnabled = result.enabled !== false; // デフォルトはtrue
+  const result = await chrome.storage.sync.get(['enabled', 'selectedDictionary']);
+  isEnabled = result.enabled !== false;
+  const selectedDict = result.selectedDictionary || 'toeic500';
+  
+  // 辞書を読み込み
+  await loadDictionary(selectedDict);
 
   if (isEnabled) {
     processPage();
@@ -30,7 +35,42 @@ async function init() {
         removeAllRuby();
       }
     }
+    
+    if (changes.selectedDictionary) {
+      loadDictionary(changes.selectedDictionary.newValue).then(() => {
+        if (isEnabled) {
+          removeAllRuby();
+          processPage();
+        }
+      });
+    }
   });
+  
+  // ポップアップからのメッセージを監視
+  chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    if (message.action === 'changeDictionary') {
+      loadDictionary(message.dictionary).then(() => {
+        if (isEnabled) {
+          removeAllRuby();
+          processPage();
+        }
+      });
+    }
+  });
+}
+
+// 辞書を読み込む
+async function loadDictionary(dictId) {
+  try {
+    const response = await fetch(chrome.runtime.getURL(`dictionaries/${dictId}.json`));
+    const dictData = await response.json();
+    currentDictionary = dictData.words;
+    console.log(`Loaded dictionary: ${dictData.metadata.name} (${dictData.metadata.wordCount} words)`);
+  } catch (error) {
+    console.error('Failed to load dictionary:', error);
+    // フォールバック：空の辞書
+    currentDictionary = {};
+  }
 }
 
 // ページ全体を処理
@@ -88,14 +128,15 @@ function processTextNode(textNode) {
   const fragment = document.createDocumentFragment();
   
   tokens.forEach(token => {
-    if (japaneseRegex.test(token) && dictionary[token]) {
+    if (japaneseRegex.test(token) && currentDictionary[token]) {
+      console.log(`Converting: ${token} -> ${currentDictionary[token]}`);
       // ルビ付き要素を作成
       const ruby = document.createElement('ruby');
       ruby.textContent = token;
       ruby.classList.add('rubylingo-ruby');
       
       const rt = document.createElement('rt');
-      rt.textContent = dictionary[token];
+      rt.textContent = currentDictionary[token];
       rt.classList.add('rubylingo-rt');
       
       ruby.appendChild(rt);
@@ -155,7 +196,8 @@ function removeAllRuby() {
     const text = ruby.childNodes[0].textContent; // ルビのベーステキスト
     ruby.replaceWith(document.createTextNode(text));
   });
-  processedElements = new WeakSet();
+  // WeakSetは新しく作成（リセット効果）
+  // processedElements = new WeakSet();
 }
 
 // スタイルを追加
