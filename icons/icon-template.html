@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>RubyLingo Icon Generator</title>
+  <style>
+    body { 
+      font-family: Arial, sans-serif; 
+      padding: 20px;
+      background: #f0f0f0;
+    }
+    .icon-container { 
+      display: flex; 
+      gap: 20px; 
+      flex-wrap: wrap;
+      margin-bottom: 30px;
+    }
+    .icon { 
+      background: white; 
+      padding: 10px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    canvas { 
+      display: block; 
+      margin-bottom: 10px;
+      image-rendering: -webkit-optimize-contrast;
+    }
+    .label {
+      text-align: center;
+      font-size: 12px;
+      color: #666;
+    }
+    .instructions {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      margin-top: 20px;
+    }
+    h2 { color: #333; }
+    code {
+      background: #f4f4f4;
+      padding: 2px 5px;
+      border-radius: 3px;
+    }
+  </style>
+</head>
+<body>
+  <h1>RubyLingo アイコン生成</h1>
+  
+  <div class="icon-container" id="icons"></div>
+  
+  <div class="instructions">
+    <h2>使い方</h2>
+    <ol>
+      <li>各アイコンを右クリックして「画像として保存」</li>
+      <li>ファイル名を <code>icon16.png</code>, <code>icon48.png</code>, <code>icon128.png</code> として保存</li>
+      <li>OFF状態のアイコンは <code>icon16_off.png</code>, <code>icon48_off.png</code>, <code>icon128_off.png</code> として保存</li>
+      <li>保存したファイルを <code>icons/</code> フォルダに配置</li>
+    </ol>
+  </div>
+
+  <script>
+    const sizes = [16, 48, 128];
+    const container = document.getElementById('icons');
+
+    function createIcon(size, isOff = false) {
+      const canvas = document.createElement('canvas');
+      canvas.width = size;
+      canvas.height = size;
+      const ctx = canvas.getContext('2d');
+
+      // 背景
+      ctx.fillStyle = isOff ? '#999999' : '#2196F3';
+      const radius = size * 0.2;
+      ctx.beginPath();
+      ctx.roundRect(0, 0, size, size, radius);
+      ctx.fill();
+
+      // テキスト
+      ctx.fillStyle = 'white';
+      ctx.font = `bold ${size * 0.6}px Arial`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('R', size / 2, size / 2);
+
+      return canvas;
+    }
+
+    // 通常状態のアイコン
+    sizes.forEach(size => {
+      const div = document.createElement('div');
+      div.className = 'icon';
+      
+      const canvas = createIcon(size, false);
+      div.appendChild(canvas);
+      
+      const label = document.createElement('div');
+      label.className = 'label';
+      label.textContent = `icon${size}.png`;
+      div.appendChild(label);
+      
+      container.appendChild(div);
+    });
+
+    // OFF状態のアイコン
+    sizes.forEach(size => {
+      const div = document.createElement('div');
+      div.className = 'icon';
+      
+      const canvas = createIcon(size, true);
+      div.appendChild(canvas);
+      
+      const label = document.createElement('div');
+      label.className = 'label';
+      label.textContent = `icon${size}_off.png`;
+      div.appendChild(label);
+      
+      container.appendChild(div);
+    });
+
+    // roundRect polyfill for older browsers
+    if (!CanvasRenderingContext2D.prototype.roundRect) {
+      CanvasRenderingContext2D.prototype.roundRect = function(x, y, w, h, r) {
+        if (w < 2 * r) r = w / 2;
+        if (h < 2 * r) r = h / 2;
+        this.moveTo(x + r, y);
+        this.arcTo(x + w, y, x + w, y + h, r);
+        this.arcTo(x + w, y + h, x, y + h, r);
+        this.arcTo(x, y + h, x, y, r);
+        this.arcTo(x, y, x + w, y, r);
+        this.closePath();
+        return this;
+      }
+    }
+  </script>
+</body>
+</html>
