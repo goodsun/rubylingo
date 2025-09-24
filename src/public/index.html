@@ -17,13 +17,16 @@
       <header>
         <h1>RubyLingo</h1>
         <p>
-          EDICT/JMdict辞書を使って日本語テキストに英訳ルビを付け、大量の英単語に触れましょう
+          形態素解析で単語に分割した日本語テキストに英訳ルビを付けます。興味のある文章を元に大量の英単語に触れましょう
         </p>
       </header>
 
       <main>
         <div class="input-section">
           <label for="inputText">日本語テキスト:</label>
+          <p style="font-size: 12px; color: #666; margin-bottom: 5px">
+            最大30,000文字まで対応（長文の場合、処理に時間がかかる場合があります）
+          </p>
           <textarea
             id="inputText"
             placeholder="日本語テキストを入力してください..."
@@ -37,9 +40,6 @@
 
         <div class="output-section">
           <label>変換結果:</label>
-          <p style="font-size: 14px; color: #666; margin-bottom: 10px;">
-            💡 ルビ（英訳）をクリックすると音声で読み上げます
-          </p>
           <div id="outputText" class="output-text"></div>
           <div id="stats" class="stats"></div>
         </div>
@@ -62,6 +62,7 @@
             >Electronic Dictionary Research and Development Group</a
           >
           によって作成・維持されており、
+          <br />
           <a
             href="https://creativecommons.org/licenses/by-sa/4.0/"
             target="_blank"
@@ -75,6 +76,12 @@
           JMdict/EDICT Project -
           <a href="http://www.edrdg.org/jmdict/j_jmdict.html" target="_blank"
             >http://www.edrdg.org/jmdict/j_jmdict.html</a
+          >
+        </p>
+        <p>
+          © bon-soleil | RubyLingo Project -
+          <a href="https://github.com/goodsun/rubylingo" target="_blank"
+            >github</a
           >
         </p>
       </footer>

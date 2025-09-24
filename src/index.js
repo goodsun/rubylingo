@@ -43,8 +43,8 @@ const validateTextInput = (req, res, next) => {
     return sendError(res, 400, "INVALID_INPUT", "テキストが必要です");
   }
   
-  if (text.length > 10000) {
-    return sendError(res, 400, "TEXT_TOO_LONG", "テキストが長すぎます（最大10,000文字）");
+  if (text.length > 30000) {
+    return sendError(res, 400, "TEXT_TOO_LONG", "テキストが長すぎます（最大30,000文字）");
   }
   
   next();

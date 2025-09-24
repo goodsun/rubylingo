@@ -172,7 +172,7 @@ components:
         text:
           type: string
           description: 変換する日本語テキスト
-          maxLength: 10000
+          maxLength: 30000
           example: "今日は良い天気です。"
         format:
           type: string
@@ -188,7 +188,7 @@ components:
         text:
           type: string
           description: 解析する日本語テキスト
-          maxLength: 10000
+          maxLength: 30000
           example: "美しい桜が咲いています。"
 
     # Response schemas

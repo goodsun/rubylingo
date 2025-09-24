@@ -99,7 +99,7 @@ curl -X GET https://wkl64b9as3.execute-api.ap-northeast-1.amazonaws.com/v1/api/h
 
 | パラメータ | 型 | 必須 | 説明 | 制限 |
 |------------|----|----|------|------|
-| `text` | string | ✅ | 変換する日本語テキスト | 最大10,000文字 |
+| `text` | string | ✅ | 変換する日本語テキスト | 最大30,000文字 |
 | `format` | string | ❌ | 出力形式（デフォルト: "html"） | "html" |
 
 **リクエストボディ:**
@@ -164,7 +164,7 @@ curl -X POST https://wkl64b9as3.execute-api.ap-northeast-1.amazonaws.com/v1/api/
   "success": false,
   "error": {
     "code": "TEXT_TOO_LONG",
-    "message": "テキストが長すぎます（最大10,000文字）"
+    "message": "テキストが長すぎます（最大30,000文字）"
   }
 }
 ```
@@ -181,7 +181,7 @@ curl -X POST https://wkl64b9as3.execute-api.ap-northeast-1.amazonaws.com/v1/api/
 
 | パラメータ | 型 | 必須 | 説明 | 制限 |
 |------------|----|----|------|------|
-| `text` | string | ✅ | 解析する日本語テキスト | 最大10,000文字 |
+| `text` | string | ✅ | 解析する日本語テキスト | 最大30,000文字 |
 
 **リクエストボディ:**
 
@@ -328,7 +328,7 @@ curl -X GET https://wkl64b9as3.execute-api.ap-northeast-1.amazonaws.com/v1/api/d
 | コード | HTTPステータス | 説明 | 対処法 |
 |--------|---------------|------|--------|
 | `INVALID_INPUT` | 400 | 必須パラメータが不正または不足 | リクエストパラメータを確認 |
-| `TEXT_TOO_LONG` | 400 | テキストが最大文字数を超過 | テキストを10,000文字以下に短縮 |
+| `TEXT_TOO_LONG` | 400 | テキストが最大文字数を超過 | テキストを30,000文字以下に短縮 |
 | `CONVERSION_FAILED` | 500 | テキスト変換処理でエラー | しばらく待ってから再試行 |
 | `ANALYSIS_FAILED` | 500 | 形態素解析処理でエラー | しばらく待ってから再試行 |
 | `STATUS_FAILED` | 500 | システム状態取得でエラー | システム管理者に連絡 |
@@ -434,7 +434,7 @@ curl -X POST https://wkl64b9as3.execute-api.ap-northeast-1.amazonaws.com/v1/api/
 
 ### 制限事項
 
-- **テキスト長**: 最大10,000文字
+- **テキスト長**: 最大30,000文字
 - **同時接続**: 制限なし（現在）
 - **レート制限**: なし（現在）
 - **ファイルアップロード**: 未対応
