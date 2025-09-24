@@ -2,7 +2,7 @@
 const API_CONFIG = {
   // Lambda deployment endpoint
   baseUrl: window.location.hostname.includes('amazonaws.com') 
-    ? '/production' // API Gateway stage path
+    ? '/v1' // API Gateway stage path (changed from /production to /v1)
     : 'http://localhost:3000' // Local development
 };
 

@@ -4,6 +4,7 @@ provider:
   name: aws
   runtime: nodejs18.x
   region: ap-northeast-1
+  stage: ${opt:stage, 'v1'}  # Short stage name: /v1 instead of /production
   memorySize: 1024
   timeout: 30
   environment:
@@ -64,7 +65,13 @@ package:
 #   - serverless-offline
 #   - serverless-domain-manager
 
-# custom:
+custom:
+  # Remove stage from URL path
+  stage: ${opt:stage, 'prod'}
+
+# Alternative approach for root path without custom domain:
+# This requires manual API Gateway configuration after deployment
+
 #   serverless-offline:
 #     httpPort: 3000
 #     lambdaPort: 3001
