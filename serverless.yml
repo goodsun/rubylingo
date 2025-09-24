@@ -11,6 +11,9 @@ provider:
   apiGateway:
     binaryMediaTypes:
       - '*/*'
+    # Custom domain configuration (requires domain ownership)
+    # domainName: api.rubylingo.com
+    # certificateArn: arn:aws:acm:ap-northeast-1:ACCOUNT_ID:certificate/CERT_ID
 
 functions:
   app:
@@ -59,8 +62,15 @@ package:
 
 # plugins:
 #   - serverless-offline
+#   - serverless-domain-manager
 
 # custom:
 #   serverless-offline:
 #     httpPort: 3000
 #     lambdaPort: 3001
+#   customDomain:
+#     domainName: api.rubylingo.com  # Your custom domain
+#     stage: production
+#     certificateName: '*.rubylingo.com'
+#     createRoute53Record: true
+#     endpointType: 'regional'
