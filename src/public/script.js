@@ -3,6 +3,48 @@ document.addEventListener("DOMContentLoaded", function () {
   const convertBtn = document.getElementById("convertBtn");
   const outputText = document.getElementById("outputText");
   const stats = document.getElementById("stats");
+  const charCount = document.getElementById("charCount");
+
+  // Character limit settings
+  const MAX_CHARS = 30000;
+  const WARNING_THRESHOLD = 25000; // 警告開始（83%）
+
+  // Update character count display
+  function updateCharCount() {
+    const currentLength = inputText.value.length;
+    const isOverLimit = currentLength > MAX_CHARS;
+    const isWarning = currentLength > WARNING_THRESHOLD && currentLength <= MAX_CHARS;
+
+    // Update display text
+    charCount.textContent = `${currentLength.toLocaleString()} / ${MAX_CHARS.toLocaleString()}文字`;
+
+    // Remove all classes first
+    charCount.classList.remove('warning', 'error');
+
+    // Add appropriate class based on count
+    if (isOverLimit) {
+      charCount.classList.add('error');
+      convertBtn.disabled = true;
+      convertBtn.textContent = '文字数制限を超過';
+    } else if (isWarning) {
+      charCount.classList.add('warning');
+      convertBtn.disabled = false;
+      convertBtn.textContent = '変換';
+    } else {
+      convertBtn.disabled = false;
+      convertBtn.textContent = '変換';
+    }
+  }
+
+  // Add event listeners for real-time character counting
+  inputText.addEventListener('input', updateCharCount);
+  inputText.addEventListener('paste', () => {
+    // Update count after paste event is processed
+    setTimeout(updateCharCount, 10);
+  });
+
+  // Initial character count update
+  updateCharCount();
 
   // Convert button click handler
   convertBtn.addEventListener("click", async () => {
@@ -10,6 +52,12 @@ document.addEventListener("DOMContentLoaded", function () {
 
     if (!text) {
       alert("日本語テキストを入力してください");
+      return;
+    }
+
+    // Check character limit before processing
+    if (text.length > MAX_CHARS) {
+      alert(`文字数制限を超えています。最大${MAX_CHARS.toLocaleString()}文字までに短縮してください。\n現在: ${text.length.toLocaleString()}文字`);
       return;
     }
 

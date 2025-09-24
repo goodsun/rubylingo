@@ -163,6 +163,37 @@ rt {
   font-weight: 500;
 }
 
+/* Character counter styling */
+.char-count {
+  font-size: 14px;
+  font-weight: 500;
+  color: #666;
+  padding: 4px 8px;
+  background-color: #f8f9fa;
+  border-radius: 4px;
+  border: 1px solid #e1e5e9;
+  transition: all 0.2s ease;
+}
+
+.char-count.warning {
+  color: #f39c12;
+  background-color: #fef9e7;
+  border-color: #f39c12;
+}
+
+.char-count.error {
+  color: #e74c3c;
+  background-color: #fdf2f2;
+  border-color: #e74c3c;
+  animation: pulse-error 0.5s ease-in-out;
+}
+
+@keyframes pulse-error {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
 /* Color-coded ruby elements using CSS nth-of-type */
 ruby:nth-of-type(3n+1) { color: #3498db; }
 ruby:nth-of-type(3n+1) rt { color: #2980b9; }
