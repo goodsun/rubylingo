@@ -23,9 +23,49 @@ app.use(cors({
 app.use(express.json({ limit: "10mb" }));
 app.use(express.static(path.join(__dirname, "public")));
 
+// Common response helpers
+const sendSuccess = (res, data) => {
+  res.json({ success: true, data });
+};
+
+const sendError = (res, status, code, message) => {
+  res.status(status).json({
+    success: false,
+    error: { code, message }
+  });
+};
+
+// Input validation middleware
+const validateTextInput = (req, res, next) => {
+  const { text } = req.body;
+  
+  if (!text || typeof text !== "string") {
+    return sendError(res, 400, "INVALID_INPUT", "テキストが必要です");
+  }
+  
+  if (text.length > 10000) {
+    return sendError(res, 400, "TEXT_TOO_LONG", "テキストが長すぎます（最大10,000文字）");
+  }
+  
+  next();
+};
+
+// Performance tracking middleware
+const trackPerformance = (req, res, next) => {
+  req.startTime = Date.now();
+  next();
+};
+
+// Lambda CORS headers middleware for specific endpoints
+const addLambdaCorsHeaders = (req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Headers', 'Content-Type');
+  next();
+};
+
 // Health check endpoint
 app.get("/api/health", (req, res) => {
-  res.json({
+  sendSuccess(res, {
     status: "ok",
     timestamp: new Date().toISOString(),
     service: "RubyLingo API",
@@ -33,48 +73,21 @@ app.get("/api/health", (req, res) => {
 });
 
 // OPTIONS handler for CORS preflight
-app.options('/api/convert', (req, res) => {
-  res.header('Access-Control-Allow-Origin', '*');
+app.options('/api/convert', addLambdaCorsHeaders, (req, res) => {
   res.header('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Content-Type');
   res.sendStatus(200);
 });
 
 // Convert endpoint (real implementation)
-app.post('/api/convert', async (req, res) => {
-  // Add CORS headers
-  res.header('Access-Control-Allow-Origin', '*');
-  res.header('Access-Control-Allow-Headers', 'Content-Type');
-  
-  const requestStart = Date.now();
+app.post('/api/convert', addLambdaCorsHeaders, trackPerformance, validateTextInput, async (req, res) => {
   try {
     const { text, format = "html" } = req.body;
-
-    if (!text || typeof text !== "string") {
-      return res.status(400).json({
-        success: false,
-        error: {
-          code: "INVALID_INPUT",
-          message: "テキストが必要です",
-        },
-      });
-    }
-
-    if (text.length > 10000) {
-      return res.status(400).json({
-        success: false,
-        error: {
-          code: "TEXT_TOO_LONG",
-          message: "テキストが長すぎます（最大10,000文字）",
-        },
-      });
-    }
 
     // Convert text using real morphological analysis
     const convertStart = Date.now();
     const result = await analyzer.convertToRuby(text);
     const convertDuration = Date.now() - convertStart;
-    const totalDuration = Date.now() - requestStart;
+    const totalDuration = Date.now() - req.startTime;
 
     // Add performance metrics to response
     result.performance = {
@@ -85,52 +98,22 @@ app.post('/api/convert', async (req, res) => {
 
     console.log(`🔄 Conversion completed: ${convertDuration}ms (total: ${totalDuration}ms)`);
 
-    res.json({
-      success: true,
-      data: result,
-    });
+    sendSuccess(res, result);
   } catch (error) {
     console.error("Conversion error:", error);
-    res.status(500).json({
-      success: false,
-      error: {
-        code: "CONVERSION_FAILED",
-        message: "変換処理でエラーが発生しました: " + error.message,
-      },
-    });
+    sendError(res, 500, "CONVERSION_FAILED", "変換処理でエラーが発生しました: " + error.message);
   }
 });
 
 // Detailed analysis endpoint
-app.post("/api/analyze", async (req, res) => {
+app.post("/api/analyze", validateTextInput, async (req, res) => {
   try {
     const { text } = req.body;
-
-    if (!text || typeof text !== "string") {
-      return res.status(400).json({
-        success: false,
-        error: {
-          code: "INVALID_INPUT",
-          message: "テキストが必要です",
-        },
-      });
-    }
-
     const analysis = await analyzer.getDetailedAnalysis(text);
-
-    res.json({
-      success: true,
-      data: analysis,
-    });
+    sendSuccess(res, analysis);
   } catch (error) {
     console.error("Analysis error:", error);
-    res.status(500).json({
-      success: false,
-      error: {
-        code: "ANALYSIS_FAILED",
-        message: "解析処理でエラーが発生しました: " + error.message,
-      },
-    });
+    sendError(res, 500, "ANALYSIS_FAILED", "解析処理でエラーが発生しました: " + error.message);
   }
 });
 
@@ -139,97 +122,50 @@ app.get("/api/status", (req, res) => {
   try {
     const status = analyzer.getStatus();
 
-    res.json({
-      success: true,
-      data: {
-        ...status,
-        uptime: process.uptime(),
-        nodeVersion: process.version,
-        memoryUsage: process.memoryUsage(),
-        attribution: {
-          dictionary: {
-            name: "JMdict/EDICT",
-            copyright:
-              "© Electronic Dictionary Research and Development Group (EDRDG)",
-            license:
-              "Creative Commons Attribution-ShareAlike 4.0 International",
-            source: "http://www.edrdg.org/jmdict/j_jmdict.html",
-          },
-          software: {
-            name: "RubyLingo",
-            license: "MIT",
-            repository: "https://github.com/goodsun/rubylingo",
-          },
+    const statusData = {
+      ...status,
+      uptime: process.uptime(),
+      nodeVersion: process.version,
+      memoryUsage: process.memoryUsage(),
+      attribution: {
+        dictionary: {
+          name: "JMdict/EDICT",
+          copyright: "© Electronic Dictionary Research and Development Group (EDRDG)",
+          license: "Creative Commons Attribution-ShareAlike 4.0 International",
+          source: "http://www.edrdg.org/jmdict/j_jmdict.html",
+        },
+        software: {
+          name: "RubyLingo",
+          license: "MIT",
+          repository: "https://github.com/goodsun/rubylingo",
         },
       },
-    });
+    };
+
+    sendSuccess(res, statusData);
   } catch (error) {
     console.error("Status error:", error);
-    res.status(500).json({
-      success: false,
-      error: {
-        code: "STATUS_FAILED",
-        message: "ステータス取得でエラーが発生しました",
-      },
-    });
+    sendError(res, 500, "STATUS_FAILED", "ステータス取得でエラーが発生しました");
   }
 });
 
-// Available dictionaries endpoint
+// Available dictionaries endpoint (simplified for EDICT unified dictionary)
 app.get('/api/dictionaries', (req, res) => {
   try {
-    const availableDictionaries = [];
+    // Return unified dictionary info since we're using single EDICT dictionary
+    const dictionaryInfo = {
+      dictionaries: [{
+        value: 'unified',
+        label: 'EDICT統合辞書',
+        wordCount: '360,000',
+        description: 'JMdict/EDICT統合辞書（全語彙）'
+      }]
+    };
     
-    // Check which dictionaries are actually available
-    if (dictionaryManager.hasWord('テスト', 'business')) {
-      availableDictionaries.push({
-        value: 'business',
-        label: 'ビジネス辞書',
-        wordCount: '360,000'
-      });
-    }
-    
-    // For local development, check other dictionaries
-    if (process.env.NODE_ENV !== 'production') {
-      if (dictionaryManager.hasWord('テスト', 'basic')) {
-        availableDictionaries.push({
-          value: 'basic',
-          label: '基礎辞書',
-          wordCount: '360,000'
-        });
-      }
-      if (dictionaryManager.hasWord('テスト', 'academic')) {
-        availableDictionaries.push({
-          value: 'academic',
-          label: '学術辞書',
-          wordCount: '340,000'
-        });
-      }
-      if (dictionaryManager.hasWord('テスト', 'comprehensive')) {
-        availableDictionaries.push({
-          value: 'comprehensive',
-          label: '総合辞書',
-          wordCount: '355,000'
-        });
-      }
-    }
-    
-    res.json({
-      success: true,
-      data: {
-        dictionaries: availableDictionaries
-      }
-    });
-    
+    sendSuccess(res, dictionaryInfo);
   } catch (error) {
     console.error('Dictionaries error:', error);
-    res.status(500).json({
-      success: false,
-      error: { 
-        code: 'DICTIONARIES_FAILED', 
-        message: '辞書リスト取得でエラーが発生しました' 
-      }
-    });
+    sendError(res, 500, 'DICTIONARIES_FAILED', '辞書リスト取得でエラーが発生しました');
   }
 });
 
