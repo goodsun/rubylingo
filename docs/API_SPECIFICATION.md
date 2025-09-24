@@ -2,7 +2,7 @@
 
 ## 概要
 
-RubyLingo APIは、日本語テキストに英訳ルビを自動挿入するサービスです。EDICT/JMdict辞書とTinySegmenterを使用して、高精度な形態素解析と翻訳を提供します。
+RubyLingo APIは、日本語テキストに英訳ルビを自動挿入するサービスです。TinySegmenterによる軽量な形態素解析とEDICT/JMdict統合辞書を使用して、高速な翻訳処理を提供します。
 
 ## 基本情報
 
@@ -14,6 +14,8 @@ RubyLingo APIは、日本語テキストに英訳ルビを自動挿入するサ�
 | **文字エンコーディング** | UTF-8 |
 | **レート制限** | なし（現在） |
 | **認証** | 不要 |
+| **最大テキスト長** | 30,000文字 |
+| **タイムアウト** | 60秒 |
 
 ## 共通仕様
 
@@ -202,7 +204,9 @@ curl -X POST https://wkl64b9as3.execute-api.ap-northeast-1.amazonaws.com/v1/api/
         "word": "美しい",
         "reading": "うつくしい",
         "translation": "beautiful",
-        "pos": ["adjective"],
+        "translations": ["beautiful"],
+        "pos": [],
+        "basic_form": "美しい",
         "start": 0,
         "end": 3
       },
@@ -210,13 +214,17 @@ curl -X POST https://wkl64b9as3.execute-api.ap-northeast-1.amazonaws.com/v1/api/
         "word": "桜",
         "reading": "さくら",
         "translation": "cherry blossom",
-        "pos": ["noun"],
+        "translations": ["cherry blossom"],
+        "pos": [],
+        "basic_form": "桜",
         "start": 3,
         "end": 4
       }
     ],
-    "total_tokens": 2,
-    "analysis_time": 45
+    "processingTime": 45,
+    "originalTokens": 8,
+    "convertedTokens": 2,
+    "conversionRate": 0.25
   }
 }
 ```

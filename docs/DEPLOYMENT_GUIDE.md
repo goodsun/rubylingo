@@ -4,12 +4,12 @@
 
 ### 1. 本番デプロイ
 ```bash
-npm run deploy
+serverless deploy
 ```
 
 ### 2. デプロイ情報確認
 ```bash
-npm run deploy:info
+serverless info
 ```
 
 ## 新しいURL構成
@@ -34,7 +34,7 @@ npm install
 
 ### 2. ローカルテスト
 ```bash
-npm run dev
+npm start
 # http://localhost:3000 でテスト
 ```
 
@@ -47,7 +47,7 @@ aws sts get-caller-identity
 
 現在のserverless.yml設定:
 - **Memory**: 2048MB (高速化)
-- **Timeout**: 30秒
+- **Timeout**: 60秒
 - **Stage**: v1 (短縮URL)
 - **Keep Warm**: 4分間隔で自動ping
 
@@ -93,7 +93,7 @@ https://wkl64b9as3.execute-api.ap-northeast-1.amazonaws.com/v1/
 **理由:**
 - 古い `/production` ステージを使用
 - 古いAPI形式（辞書パラメータ）
-- `npm run deploy` で十分
+- `serverless deploy` で十分
 
 ## トラブルシューティング
 

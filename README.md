@@ -1,65 +1,79 @@
-# RubyLingo - 英単語大量シャワー Chrome 拡張機能
-Ruby Ringo! A platform for learning Japanese text with English translation ruby, exposing users to a large number of English words.
+# RubyLingo - 日本語テキスト英訳ルビAPI
+A fast Japanese text to English ruby conversion API using TinySegmenter and EDICT/JMdict dictionary, providing instant translation for large-scale English vocabulary exposure.
 
-## 0. 核心哲学：ルビによる大量 RubyLingo
+## 0. 概要
 
-### 最も重要な学習原理
+### 最も重要な価値提供
 
-**学習者が興味のある日本語コンテンツを楽しんで読みながら、同時に大量の RubyLingo を浴び続ける。**
+**日本語テキストに英訳ルビを高速で挿入し、大量の英単語学習機会を提供する。**
 
-これが本拡張機能の唯一の存在意義である。
+これがRubyLingo APIの核心価値である。
 
-### 大量シャワーの威力
+### APIの威力
 
-- **1 日数千語の英単語露出**: 普通のブラウジングで自動的に
-- **継続的反復接触**: 同じ単語に自然に何度も遭遇
-- **無意識学習**: 意図しなくても英単語が目に焼き付く
-- **忘却恐怖からの解放**: 忘れても構わない、また触れるから
+- **高速処理**: 平均200ms以下でテキスト変換
+- **大量語彙**: 36万語のEDICT/JMdict辞書を活用
+- **簡単統合**: REST APIであらゆるアプリケーションに統合可能
+- **サーバーレス**: AWS Lambdaで自動スケーリング
 
-### アンチパターン（絶対に避けるべきこと）
+### 設計思思
 
-- ❌ 学習進捗管理（覚えることが目的ではない）
-- ❌ 学習済み単語除外（繰り返しこそが力）
-- ❌ 暗記チェック機能（テストは学習を阻害する）
-- ❌ ゲーミフィケーション（娯楽は本質を曇らせる）
-- ❌ 複雑な設定（シャワーを浴びる妨げになる）
+- ✅ シンプルなAPIインターフェース
+- ✅ 高速レスポンス時間
+- ✅ サーバーレス構成でメンテナンスフリー
+- ✅ 無料で無制限利用（現在）
+- ✅ EDICTプロジェクトの信頼性ある辞書データ
 
-**絶対原則**: 単語を覚えさせようとするな。ただひたすら浴び続けさせよ。
+**基本原則**: APIとしてシンプルで高速、あらゆるアプリケーションに組み込み可能。
 
 ---
 
-## 1. 概要
+## 1. サービス概要
 
-### 1.1 プロダクト名
+### 1.1 サービス名
 
-RubyLingo
+RubyLingo API
 
-### 1.2 コンセプト
+### 1.2 コア機能
 
-**「あらゆる Web ページを RubyLingo 装置に変換」**
+**「日本語テキスト → 英訳ルビHTML変換」**
 
-日本語で書かれた Web ページを形態素解析し、各単語に英訳ルビを自動挿入。普段のブラウジングを大量英単語露出時間に変える。
+入力された日本語テキストをTinySegmenterで分析し、EDICT/JMdict辞書から英訳を取得し、HTMLルビタグ付きのテキストを返すAPIサービス。
 
-### 1.3 動作例
+### 1.3 API利用例
 
-**変換前:**
+**リクエスト:**
 
-```
-重要な会議で新しい戦略を検討した。
-```
-
-**変換後:**
-
-```html
-<ruby>重要<rt>important</rt></ruby
->な<ruby>会議<rt>meeting</rt></ruby
->で<ruby>新しい<rt>new</rt></ruby
-><ruby>戦略<rt>strategy</rt></ruby
->を<ruby>検討<rt>consideration</rt></ruby
->した。
+```bash
+curl -X POST https://wkl64b9as3.execute-api.ap-northeast-1.amazonaws.com/v1/api/convert \
+  -H "Content-Type: application/json" \
+  -d '{"text":"重要な会議で新しい戦略を検討した。"}'
 ```
 
-**効果**: 1 文で 5 つの英単語に自動露出
+**レスポンス:**
+
+```json
+{
+  "success": true,
+  "data": {
+    "original": "重要な会議で新しい戦略を検討した。",
+    "converted": "<ruby>重要<rt>important</rt></ruby>な<ruby>会議<rt>meeting</rt></ruby>で<ruby>新しい<rt>new</rt></ruby><ruby>戦略<rt>strategy</rt></ruby>を<ruby>検討<rt>consideration</rt></ruby>した。",
+    "stats": {
+      "total_characters": 17,
+      "converted_words": 5,
+      "conversion_rate": "100%",
+      "processing_time": 150
+    },
+    "performance": {
+      "conversion_time": 120,
+      "total_request_time": 150,
+      "dictionary_loaded": true
+    }
+  }
+}
+```
+
+**効果**: 1文で5つの英単語に自動変換（150msで処理完了）
 
 ## 2. 大量シャワー実現機能
 
