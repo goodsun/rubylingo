@@ -9,6 +9,7 @@
     "test": "jest",
     "build": "echo 'Build complete'",
     "deploy": "serverless deploy",
+    "deploy:info": "serverless info",
     "download-jmdict": "node scripts/download-jmdict.js",
     "parse-jmdict": "node scripts/parse-jmdict.js",
     "build-dictionaries": "npm run download-jmdict && npm run parse-jmdict",
