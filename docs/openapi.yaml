@@ -3,7 +3,7 @@ info:
   title: RubyLingo API
   description: |
     RubyLingo APIは、日本語テキストに英訳ルビを自動挿入するサービスです。
-    TinySegmenterによる軽量な形態素解析とEDICT/JMdict統合辞書を使用して、高速な翻訳処理を提供します。
+    Kuromojiによる高精度な形態素解析とEDICT/JMdict統合辞書を使用して、正確な翻訳処理を提供します。
   version: 1.0.0
   contact:
     name: RubyLingo Team

@@ -68,6 +68,28 @@ class DictionaryManager {
   }
 
   /**
+   * Look up word by reading (hiragana)
+   * @param {string} reading - Reading to look up
+   * @returns {Object|null} Dictionary entry or null
+   */
+  lookupByReading(reading) {
+    this.ensureDictionaryLoaded();
+    
+    if (!this.dictionary) {
+      return null;
+    }
+
+    // Search through all entries to find one with matching reading
+    for (const [word, entry] of Object.entries(this.dictionary)) {
+      if (entry.reading && entry.reading === reading) {
+        return entry;
+      }
+    }
+    
+    return null;
+  }
+
+  /**
    * Look up word with reading information
    * @param {string} word - Word to look up
    * @returns {Object|null} Dictionary entry with reading or null

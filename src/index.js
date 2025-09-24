@@ -6,12 +6,15 @@ const path = require("path");
 // Import our modules
 const DictionaryManager = require("./lib/dictionary");
 const EdictAnalyzer = require("./lib/edict-analyzer");
+const KuromojiAnalyzer = require("./lib/kuromoji-analyzer");
 
 const app = express();
 
 // Initialize components
 const dictionaryManager = new DictionaryManager();
-const analyzer = new EdictAnalyzer(dictionaryManager);
+// Switch to Kuromoji for better tokenization accuracy
+const analyzer = new KuromojiAnalyzer(dictionaryManager);
+// const analyzer = new EdictAnalyzer(dictionaryManager); // Fallback to TinySegmenter
 
 // Middleware
 app.use(cors({
