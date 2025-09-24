@@ -45,6 +45,8 @@ app.post('/api/convert', async (req, res) => {
   // Add CORS headers
   res.header('Access-Control-Allow-Origin', '*');
   res.header('Access-Control-Allow-Headers', 'Content-Type');
+  
+  const requestStart = Date.now();
   try {
     const { text, format = "html" } = req.body;
 
@@ -69,7 +71,19 @@ app.post('/api/convert', async (req, res) => {
     }
 
     // Convert text using real morphological analysis
+    const convertStart = Date.now();
     const result = await analyzer.convertToRuby(text);
+    const convertDuration = Date.now() - convertStart;
+    const totalDuration = Date.now() - requestStart;
+
+    // Add performance metrics to response
+    result.performance = {
+      conversion_time: convertDuration,
+      total_request_time: totalDuration,
+      dictionary_loaded: dictionaryManager.isLoaded
+    };
+
+    console.log(`🔄 Conversion completed: ${convertDuration}ms (total: ${totalDuration}ms)`);
 
     res.json({
       success: true,
@@ -227,27 +241,73 @@ app.get("*", (req, res) => {
 // Export for Lambda or local server
 const port = process.env.PORT || 3000;
 
-// Initialize system on startup
+// Lambda-optimized initialization
+let isInitialized = false;
+let initPromise = null;
+
 async function initializeSystem() {
-  try {
-    console.log("🚀 Initializing RubyLingo system...");
+  if (isInitialized) return;
+  if (initPromise) return initPromise;
 
-    // Preload unified dictionary
+  initPromise = (async () => {
+    try {
+      const startTime = Date.now();
+      console.log("🚀 Initializing RubyLingo system...");
+
+      // Initialize analyzer first (lightweight)
+      await analyzer.initialize();
+
+      // Only preload dictionary on first request for Lambda (lazy loading)
+      if (process.env.NODE_ENV !== "production") {
+        dictionaryManager.preloadDictionaries();
+      }
+
+      const duration = Date.now() - startTime;
+      console.log(`✅ RubyLingo system initialized successfully in ${duration}ms`);
+      isInitialized = true;
+    } catch (error) {
+      console.error("❌ System initialization failed:", error);
+      initPromise = null; // Reset promise to allow retry
+      throw error;
+    }
+  })();
+
+  return initPromise;
+}
+
+// Ensure dictionary is loaded for Lambda requests
+async function ensureDictionaryLoaded() {
+  if (process.env.NODE_ENV === "production" && !dictionaryManager.isLoaded) {
+    const startTime = Date.now();
+    console.log("📚 Loading dictionary on-demand...");
     dictionaryManager.preloadDictionaries();
-
-    // Initialize analyzer
-    await analyzer.initialize();
-
-    console.log("✅ RubyLingo system initialized successfully");
-  } catch (error) {
-    console.error("❌ System initialization failed:", error);
-    throw error;
+    const duration = Date.now() - startTime;
+    console.log(`✅ Dictionary loaded in ${duration}ms`);
   }
 }
 
 if (process.env.NODE_ENV === "production") {
-  // Lambda handler
-  module.exports.handler = serverless(app);
+  // Lambda handler with lazy initialization
+  const lambdaHandler = async (event, context) => {
+    // Handle warmer events to keep Lambda warm
+    if (event.warmer) {
+      console.log('🔥 Warmer ping - keeping Lambda warm');
+      await initializeSystem(); // Ensure system is initialized
+      return { statusCode: 200, body: 'Warmer ping' };
+    }
+
+    // Initialize system if not already done
+    await initializeSystem();
+    
+    // Ensure dictionary is loaded for conversion requests
+    if (event.path && (event.path.includes('/convert') || event.path.includes('/analyze'))) {
+      await ensureDictionaryLoaded();
+    }
+    
+    return serverless(app)(event, context);
+  };
+  
+  module.exports.handler = lambdaHandler;
 } else {
   // Local development server
   initializeSystem()
