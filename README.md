@@ -234,6 +234,32 @@ POST /api/convert
 
 ---
 
+## API 仕様書
+
+### 📋 API ドキュメント
+- **[API 仕様書](docs/API_SPECIFICATION.md)** - 詳細なAPI仕様とサンプルコード
+- **[OpenAPI/Swagger](docs/openapi.yaml)** - 機械可読なAPI仕様
+
+### 🌐 API エンドポイント
+**Base URL**: `https://wkl64b9as3.execute-api.ap-northeast-1.amazonaws.com/v1`
+
+**主要エンドポイント**:
+- `GET /api/health` - ヘルスチェック
+- `POST /api/convert` - テキスト変換（ルビ挿入）
+- `POST /api/analyze` - 詳細な形態素解析
+- `GET /api/status` - システム状態
+- `GET /api/dictionaries` - 辞書情報
+
+### 💻 使用例
+```bash
+# テキスト変換
+curl -X POST https://wkl64b9as3.execute-api.ap-northeast-1.amazonaws.com/v1/api/convert \
+  -H "Content-Type: application/json" \
+  -d '{"text":"今日は良い天気です。"}'
+```
+
+---
+
 ## ライセンス
 
 ### ソフトウェアライセンス

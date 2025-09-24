@@ -1,0 +1,471 @@
+openapi: 3.0.3
+info:
+  title: RubyLingo API
+  description: |
+    RubyLingo APIは、日本語テキストに英訳ルビを自動挿入するサービスです。
+    EDICT/JMdict辞書とTinySegmenterを使用して、高精度な形態素解析と翻訳を提供します。
+  version: 1.0.0
+  contact:
+    name: RubyLingo Team
+    url: https://github.com/goodsun/rubylingo
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: https://wkl64b9as3.execute-api.ap-northeast-1.amazonaws.com/v1
+    description: Production server
+
+paths:
+  /api/health:
+    get:
+      summary: ヘルスチェック
+      description: システムの稼働状況を確認します
+      operationId: healthCheck
+      tags:
+        - System
+      responses:
+        '200':
+          description: システム正常
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+
+  /api/convert:
+    options:
+      summary: CORS プリフライト
+      description: CORS プリフライトリクエスト
+      operationId: convertOptions
+      tags:
+        - Conversion
+      responses:
+        '200':
+          description: CORS許可
+
+    post:
+      summary: テキスト変換
+      description: 日本語テキストに英訳ルビを挿入します
+      operationId: convertText
+      tags:
+        - Conversion
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConvertRequest'
+            examples:
+              simple:
+                summary: 簡単なテキスト
+                value:
+                  text: "今日は良い天気です。"
+                  format: "html"
+              complex:
+                summary: 複雑なテキスト
+                value:
+                  text: "美しい桜が咲いている公園で、子供たちが元気に遊んでいます。"
+                  format: "html"
+      responses:
+        '200':
+          description: 変換成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConvertResponse'
+        '400':
+          description: 不正なリクエスト
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: サーバーエラー
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/analyze:
+    post:
+      summary: 詳細解析
+      description: テキストの詳細な形態素解析結果を取得します
+      operationId: analyzeText
+      tags:
+        - Analysis
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AnalyzeRequest'
+      responses:
+        '200':
+          description: 解析成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnalyzeResponse'
+        '400':
+          description: 不正なリクエスト
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: サーバーエラー
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/status:
+    get:
+      summary: システム状態
+      description: システムの詳細な状態情報を取得します
+      operationId: getStatus
+      tags:
+        - System
+      responses:
+        '200':
+          description: 状態取得成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatusResponse'
+        '500':
+          description: サーバーエラー
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/dictionaries:
+    get:
+      summary: 辞書情報
+      description: 利用可能な辞書の情報を取得します
+      operationId: getDictionaries
+      tags:
+        - Dictionary
+      responses:
+        '200':
+          description: 辞書情報取得成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DictionariesResponse'
+        '500':
+          description: サーバーエラー
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  schemas:
+    # Request schemas
+    ConvertRequest:
+      type: object
+      required:
+        - text
+      properties:
+        text:
+          type: string
+          description: 変換する日本語テキスト
+          maxLength: 10000
+          example: "今日は良い天気です。"
+        format:
+          type: string
+          description: 出力形式
+          enum: [html]
+          default: html
+
+    AnalyzeRequest:
+      type: object
+      required:
+        - text
+      properties:
+        text:
+          type: string
+          description: 解析する日本語テキスト
+          maxLength: 10000
+          example: "美しい桜が咲いています。"
+
+    # Response schemas
+    HealthResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          type: object
+          properties:
+            status:
+              type: string
+              example: "ok"
+            timestamp:
+              type: string
+              format: date-time
+              example: "2024-01-15T10:30:00.000Z"
+            service:
+              type: string
+              example: "RubyLingo API"
+
+    ConvertResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          type: object
+          properties:
+            original:
+              type: string
+              example: "今日は良い天気です。"
+            converted:
+              type: string
+              example: "<ruby>今日<rt>today</rt></ruby>は<ruby>良い<rt>good</rt></ruby><ruby>天気<rt>weather</rt></ruby>です。"
+            stats:
+              $ref: '#/components/schemas/ConversionStats'
+            performance:
+              $ref: '#/components/schemas/PerformanceMetrics'
+
+    AnalyzeResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          type: object
+          properties:
+            tokens:
+              type: array
+              items:
+                $ref: '#/components/schemas/Token'
+            total_tokens:
+              type: integer
+              example: 2
+            analysis_time:
+              type: integer
+              description: 解析時間（ミリ秒）
+              example: 45
+
+    StatusResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          type: object
+          properties:
+            analyzer:
+              $ref: '#/components/schemas/AnalyzerInfo'
+            uptime:
+              type: number
+              description: 稼働時間（秒）
+              example: 3600.5
+            nodeVersion:
+              type: string
+              example: "v18.19.0"
+            memoryUsage:
+              $ref: '#/components/schemas/MemoryUsage'
+            attribution:
+              $ref: '#/components/schemas/Attribution'
+
+    DictionariesResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          type: object
+          properties:
+            dictionaries:
+              type: array
+              items:
+                $ref: '#/components/schemas/DictionaryInfo'
+
+    ErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        error:
+          type: object
+          properties:
+            code:
+              type: string
+              example: "INVALID_INPUT"
+            message:
+              type: string
+              example: "テキストが必要です"
+
+    # Common schemas
+    ConversionStats:
+      type: object
+      properties:
+        total_characters:
+          type: integer
+          description: 総文字数
+          example: 9
+        converted_words:
+          type: integer
+          description: 変換された語数
+          example: 3
+        conversion_rate:
+          type: string
+          description: 変換率
+          example: "67%"
+        processing_time:
+          type: integer
+          description: 処理時間（ミリ秒）
+          example: 150
+
+    PerformanceMetrics:
+      type: object
+      properties:
+        conversion_time:
+          type: integer
+          description: 変換時間（ミリ秒）
+          example: 120
+        total_request_time:
+          type: integer
+          description: 総リクエスト時間（ミリ秒）
+          example: 150
+        dictionary_loaded:
+          type: boolean
+          description: 辞書読み込み状態
+          example: true
+
+    Token:
+      type: object
+      properties:
+        word:
+          type: string
+          description: 単語
+          example: "美しい"
+        reading:
+          type: string
+          description: 読み
+          example: "うつくしい"
+        translation:
+          type: string
+          description: 英訳
+          example: "beautiful"
+        pos:
+          type: array
+          items:
+            type: string
+          description: 品詞
+          example: ["adjective"]
+        start:
+          type: integer
+          description: 開始位置
+          example: 0
+        end:
+          type: integer
+          description: 終了位置
+          example: 3
+
+    AnalyzerInfo:
+      type: object
+      properties:
+        type:
+          type: string
+          example: "EDICT"
+        version:
+          type: string
+          example: "1.0.0"
+        dictionary_loaded:
+          type: boolean
+          example: true
+        total_words:
+          type: integer
+          example: 360949
+
+    MemoryUsage:
+      type: object
+      properties:
+        rss:
+          type: integer
+          description: RSS（Resident Set Size）
+          example: 157286400
+        heapTotal:
+          type: integer
+          description: ヒープ総量
+          example: 134217728
+        heapUsed:
+          type: integer
+          description: ヒープ使用量
+          example: 98765432
+        external:
+          type: integer
+          description: 外部メモリ
+          example: 12345678
+        arrayBuffers:
+          type: integer
+          description: ArrayBuffer使用量
+          example: 1234567
+
+    Attribution:
+      type: object
+      properties:
+        dictionary:
+          type: object
+          properties:
+            name:
+              type: string
+              example: "JMdict/EDICT"
+            copyright:
+              type: string
+              example: "© Electronic Dictionary Research and Development Group (EDRDG)"
+            license:
+              type: string
+              example: "Creative Commons Attribution-ShareAlike 4.0 International"
+            source:
+              type: string
+              example: "http://www.edrdg.org/jmdict/j_jmdict.html"
+        software:
+          type: object
+          properties:
+            name:
+              type: string
+              example: "RubyLingo"
+            license:
+              type: string
+              example: "MIT"
+            repository:
+              type: string
+              example: "https://github.com/goodsun/rubylingo"
+
+    DictionaryInfo:
+      type: object
+      properties:
+        value:
+          type: string
+          example: "unified"
+        label:
+          type: string
+          example: "EDICT統合辞書"
+        wordCount:
+          type: string
+          example: "360,000"
+        description:
+          type: string
+          example: "JMdict/EDICT統合辞書（全語彙）"
+
+tags:
+  - name: Conversion
+    description: テキスト変換関連
+  - name: Analysis
+    description: テキスト解析関連
+  - name: System
+    description: システム関連
+  - name: Dictionary
+    description: 辞書関連
